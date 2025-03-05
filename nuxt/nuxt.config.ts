@@ -3,10 +3,11 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
-	css: ["@/assets/tailwind.css"],
+	ssr: false,
+	css: ["@/assets/css/tailwind.css"],
 	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts"],
 	primevue: {
-		importTheme: { from: "@/primevue/theme", as: "auraTheme" },
+		importTheme: { from: "@/primevue/theme" },
 		options: {
 			ptOptions: { mergeProps: true },
 			ripple: true,
