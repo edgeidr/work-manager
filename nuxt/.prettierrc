@@ -1,0 +1,8 @@
+{
+	"plugins": ["prettier-plugin-tailwindcss"],
+	"tabWidth": 4,
+	"printWidth": 160,
+	"vueIndentScriptAndStyle": true,
+	"bracketSameLine": true,
+	"useTabs": true
+}
