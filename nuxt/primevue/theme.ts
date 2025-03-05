@@ -7,5 +7,8 @@ export default {
 	preset: MyPreset,
 	options: {
 		darkModeSelector: ".p-dark",
+		cssLayer: {
+			order: "theme, base, primevue",
+		},
 	},
 };
