@@ -9,6 +9,6 @@
 	@tailwind utilities;
 }
 
-body {
+:root {
 	@apply bg-surface-900 font-[Inter] text-[14px];
 }
