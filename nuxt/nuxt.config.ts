@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
 	css: ["@/assets/tailwind.css"],
-	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss"],
+	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts"],
 	primevue: {
 		importTheme: { from: "@/primevue/theme", as: "auraTheme" },
 		options: {
@@ -14,5 +14,8 @@ export default defineNuxtConfig({
 				dayNamesMin: ["S", "M", "T", "W", "T", "F", "S"],
 			},
 		},
+	},
+	fonts: {
+		families: [{ name: "Inter" }],
 	},
 });
