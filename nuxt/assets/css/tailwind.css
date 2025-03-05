@@ -8,7 +8,3 @@
 	@tailwind components;
 	@tailwind utilities;
 }
-
-:root {
-	@apply bg-surface-900 font-[Inter] text-[14px];
-}
