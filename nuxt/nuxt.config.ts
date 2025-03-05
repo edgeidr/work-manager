@@ -5,6 +5,13 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	ssr: false,
 	css: ["@/assets/css/tailwind.css"],
+	app: {
+		head: {
+			htmlAttrs: {
+				class: "p-dark",
+			},
+		},
+	},
 	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts"],
 	primevue: {
 		importTheme: { from: "@/primevue/theme" },
