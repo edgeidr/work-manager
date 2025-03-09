@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
 	ssr: false,
-	css: ["@/assets/css/tailwind.css"],
+	css: ["@/assets/css/base.css"],
 	app: {
 		head: {
 			htmlAttrs: {
@@ -12,7 +12,7 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts"],
+	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon"],
 	primevue: {
 		importTheme: { from: "@/primevue/theme" },
 		options: {
