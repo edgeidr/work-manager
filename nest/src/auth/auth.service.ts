@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpDto } from './dto/sign-up.dto';
-import { hash } from 'argon2';
+import { hash, verify } from 'argon2';
+import { SignInDto } from './dto/sign-in.dto';
 
 @Injectable()
 export class AuthService {
@@ -25,8 +26,21 @@ export class AuthService {
 		return user;
 	}
 
-	signIn() {
-		return 'signin';
+	async signIn(signInDto: SignInDto) {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				email: signInDto.email,
+			},
+		});
+
+		if (!user) throw new ForbiddenException('Account does not exist!');
+
+		const { password, ...userData } = user;
+		const passwordMatches = await verify(password, signInDto.password);
+
+		if (!passwordMatches) throw new ForbiddenException('Account does not exist');
+
+		return userData;
 	}
 
 	signOut() {
