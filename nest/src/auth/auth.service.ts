@@ -3,10 +3,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { hash, verify } from 'argon2';
 import { SignInDto } from './dto/sign-in.dto';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		private jwt: JwtService,
+		private config: ConfigService,
+	) {}
 
 	async signUp(signUpDto: SignUpDto) {
 		const hashedPassword = await hash(signUpDto.password);
@@ -18,12 +24,9 @@ export class AuthService {
 				lastName: signUpDto.lastName,
 				isActive: true,
 			},
-			omit: {
-				password: true,
-			},
 		});
 
-		return user;
+		return this.signToken(user.id, user.email);
 	}
 
 	async signIn(signInDto: SignInDto) {
@@ -35,15 +38,28 @@ export class AuthService {
 
 		if (!user) throw new ForbiddenException('Account does not exist!');
 
-		const { password, ...userData } = user;
-		const passwordMatches = await verify(password, signInDto.password);
+		const passwordMatches = await verify(user.password, signInDto.password);
 
 		if (!passwordMatches) throw new ForbiddenException('Account does not exist');
 
-		return userData;
+		return this.signToken(user.id, user.email);
 	}
 
 	signOut() {
 		return 'signOut';
+	}
+
+	async signToken(userId: number, email: string): Promise<{ accessToken: string }> {
+		const payload = {
+			sub: userId,
+			email,
+		};
+
+		const token = await this.jwt.signAsync(payload, {
+			expiresIn: '15m',
+			secret: this.config.get('JWT_SECRET'),
+		});
+
+		return { accessToken: token };
 	}
 }
