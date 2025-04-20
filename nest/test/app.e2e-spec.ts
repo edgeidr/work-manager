@@ -5,6 +5,8 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import * as pactum from 'pactum';
 import { SignUpDto } from '../src/auth/dto/sign-up.dto';
 import { SignInDto } from '../src/auth/dto/sign-in.dto';
+import { CreateRoleDto } from '../src/roles/dto/create-role.dto';
+import { UpdateRoleDto } from '../src/roles/dto/update-role.dto';
 
 describe('App e2e', () => {
 	let app: INestApplication;
@@ -110,7 +112,70 @@ describe('App e2e', () => {
 			});
 
 			it('should signin', () => {
-				return pactum.spec().post(url).withBody(signInDto).expectStatus(201);
+				return pactum.spec().post(url).withBody(signInDto).expectStatus(201).stores('accessToken', 'accessToken');
+			});
+		});
+	});
+
+	describe('Role', () => {
+		describe('Get roles', () => {
+			const url = '/roles';
+
+			it('should get roles', () => {
+				return pactum.spec().get(url).withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Create role', () => {
+			const url = '/roles';
+
+			it('should creale role Superadmin', () => {
+				const createRoleDto: CreateRoleDto = {
+					name: 'Super Admin',
+				};
+
+				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createRoleDto).expectStatus(201).stores('superadminId', 'id');
+			});
+
+			it('should creale role Admin', () => {
+				const createRoleDto: CreateRoleDto = {
+					name: 'Admin',
+				};
+
+				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createRoleDto).expectStatus(201).stores('adminId', 'id');
+			});
+		});
+
+		describe('Get role by id', () => {
+			const url = '/roles/{id}';
+
+			it('should get role Super Admin', () => {
+				return pactum.spec().get(url).withPathParams('id', '$S{superadminId}').withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Edit role by id', () => {
+			const url = '/roles/{id}';
+			const updateRoleDto: UpdateRoleDto = {
+				name: 'Superadmin',
+			};
+
+			it('should edit role Super Admin to Superadmin', () => {
+				return pactum
+					.spec()
+					.patch(url)
+					.withPathParams('id', '$S{superadminId}')
+					.withBearerToken('$S{accessToken}')
+					.withBody(updateRoleDto)
+					.expectStatus(200);
+			});
+		});
+
+		describe('Delete role by id', () => {
+			const url = '/roles/{id}';
+
+			it('should delete role Admin', () => {
+				return pactum.spec().delete(url).withPathParams('id', '$S{adminId}').withBearerToken('$S{accessToken}').expectStatus(200);
 			});
 		});
 	});
@@ -118,14 +183,6 @@ describe('App e2e', () => {
 	describe('User', () => {
 		describe('Get me', () => {});
 		describe('Edit user', () => {});
-	});
-
-	describe('Role', () => {
-		describe('Get roles', () => {});
-		describe('Create role', () => {});
-		describe('Get role by id', () => {});
-		describe('Edit role', () => {});
-		describe('Delete role', () => {});
 	});
 
 	describe('Action', () => {
