@@ -114,7 +114,12 @@ describe('App e2e', () => {
 			});
 
 			it('should signin', () => {
-				return pactum.spec().post(url).withBody(signInDto).expectStatus(201).stores('accessToken', 'accessToken');
+				return pactum
+					.spec()
+					.post(url)
+					.withBody(signInDto)
+					.expectStatus(201)
+					.stores('accessToken', 'accessToken');
 			});
 		});
 	});
@@ -136,7 +141,13 @@ describe('App e2e', () => {
 					name: 'Super Admin',
 				};
 
-				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createRoleDto).expectStatus(201).stores('superadminId', 'id');
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createRoleDto)
+					.expectStatus(201)
+					.stores('superadminId', 'id');
 			});
 
 			it('should creale role Admin', () => {
@@ -144,7 +155,13 @@ describe('App e2e', () => {
 					name: 'Admin',
 				};
 
-				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createRoleDto).expectStatus(201).stores('adminId', 'id');
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createRoleDto)
+					.expectStatus(201)
+					.stores('adminId', 'id');
 			});
 		});
 
@@ -152,7 +169,12 @@ describe('App e2e', () => {
 			const url = '/roles/{id}';
 
 			it('should get role Super Admin', () => {
-				return pactum.spec().get(url).withPathParams('id', '$S{superadminId}').withBearerToken('$S{accessToken}').expectStatus(200);
+				return pactum
+					.spec()
+					.get(url)
+					.withPathParams('id', '$S{superadminId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
 			});
 		});
 
@@ -177,7 +199,12 @@ describe('App e2e', () => {
 			const url = '/roles/{id}';
 
 			it('should delete role Admin', () => {
-				return pactum.spec().delete(url).withPathParams('id', '$S{adminId}').withBearerToken('$S{accessToken}').expectStatus(200);
+				return pactum
+					.spec()
+					.delete(url)
+					.withPathParams('id', '$S{adminId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
 			});
 		});
 	});
@@ -199,7 +226,13 @@ describe('App e2e', () => {
 					name: 'role:creates',
 				};
 
-				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createActionDto).expectStatus(201).stores('roleCreateId', 'id');
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createActionDto)
+					.expectStatus(201)
+					.stores('roleCreateId', 'id');
 			});
 
 			it("should create action 'role:update'", () => {
@@ -207,7 +240,13 @@ describe('App e2e', () => {
 					name: 'role:update',
 				};
 
-				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createActionDto).expectStatus(201).stores('roleUpdateId', 'id');
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createActionDto)
+					.expectStatus(201)
+					.stores('roleUpdateId', 'id');
 			});
 		});
 
@@ -215,11 +254,21 @@ describe('App e2e', () => {
 			const url = '/actions/{id}';
 
 			it("should get action 'role:creates'", () => {
-				return pactum.spec().get(url).withPathParams('id', '$S{roleCreateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+				return pactum
+					.spec()
+					.get(url)
+					.withPathParams('id', '$S{roleCreateId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
 			});
 
 			it("should get action 'role:update'", () => {
-				return pactum.spec().get(url).withPathParams('id', '$S{roleUpdateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+				return pactum
+					.spec()
+					.get(url)
+					.withPathParams('id', '$S{roleUpdateId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
 			});
 		});
 
@@ -244,7 +293,12 @@ describe('App e2e', () => {
 			const url = '/actions/{id}';
 
 			it("should delete action 'role:update'", () => {
-				return pactum.spec().delete(url).withPathParams('id', '$S{roleUpdateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+				return pactum
+					.spec()
+					.delete(url)
+					.withPathParams('id', '$S{roleUpdateId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
 			});
 		});
 	});
