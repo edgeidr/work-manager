@@ -9,6 +9,8 @@ import { CreateRoleDto } from '../src/roles/dto/create-role.dto';
 import { UpdateRoleDto } from '../src/roles/dto/update-role.dto';
 import { CreateActionDto } from '../src/actions/dto/create-action.dto';
 import { UpdateActionDto } from '../src/actions/dto/update-action.dto';
+import { UpdateUserDto } from '../src/users/dto/update-user.dto';
+import { inspect } from 'util';
 
 describe('App e2e', () => {
 	let app: INestApplication;
@@ -304,7 +306,171 @@ describe('App e2e', () => {
 	});
 
 	describe('User', () => {
-		describe('Get me', () => {});
-		describe('Edit user', () => {});
+		describe('Get me', () => {
+			const url = '/users/me';
+
+			it('should get current user', () => {
+				return pactum.spec().get(url).withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Get users', () => {
+			const url = '/users';
+
+			it('should get users', () => {
+				return pactum.spec().get(url).withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Create user', () => {
+			const url = '/users';
+			const createUserDto = {
+				email: 'testsuperadmin@gmail.com',
+				password: 'testpassword',
+				firstName: 'Test',
+				lastName: 'Super Admin',
+				isActive: true,
+				roleIds: ['$S{superadminId}'],
+			};
+			const createAnotherUserDto = {
+				email: 'testsuperadmin2@gmail.com',
+				password: 'testpassword',
+				firstName: 'Test 2',
+				lastName: 'Super Admin',
+				isActive: true,
+				roleIds: ['$S{superadminId}'],
+			};
+
+			it('should throw if email is empty', () => {
+				const { email, ...incompleteDto } = createUserDto;
+
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(incompleteDto)
+					.expectStatus(400);
+			});
+
+			it('should throw if password is empty', () => {
+				const { password, ...incompleteDto } = createUserDto;
+
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(incompleteDto)
+					.expectStatus(400);
+			});
+
+			it('should throw if firstName is empty', () => {
+				const { firstName, ...incompleteDto } = createUserDto;
+
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(incompleteDto)
+					.expectStatus(400);
+			});
+
+			it('should throw if lastName is empty', () => {
+				const { lastName, ...incompleteDto } = createUserDto;
+
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(incompleteDto)
+					.expectStatus(400);
+			});
+
+			it('should throw if isActive is empty', () => {
+				const { isActive, ...incompleteDto } = createUserDto;
+
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(incompleteDto)
+					.expectStatus(400);
+			});
+
+			it('should throw if no body is provided', () => {
+				return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(400);
+			});
+
+			it('should create user with Superadmin role', () => {
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createUserDto)
+					.expectStatus(201)
+					.stores('testId', 'id');
+			});
+
+			it('should create another user with Superadmin role', () => {
+				return pactum
+					.spec()
+					.post(url)
+					.withBearerToken('$S{accessToken}')
+					.withBody(createAnotherUserDto)
+					.expectStatus(201)
+					.stores('test2Id', 'id');
+			});
+		});
+
+		describe('Get user by id', () => {
+			const url = '/users/{id}';
+
+			it("should get user 'Test Super Admin'", () => {
+				return pactum
+					.spec()
+					.get(url)
+					.withPathParams('id', '$S{testId}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
+			});
+
+			it("should get user 'Test 2 Super Admin'", () => {
+				return pactum
+					.spec()
+					.get(url)
+					.withPathParams('id', '$S{test2Id}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
+			});
+		});
+
+		describe('Edit user', () => {
+			const url = '/users/{id}';
+			const updateUserDto: UpdateUserDto = {
+				isActive: false,
+			};
+
+			it("should update isActive of user 'Test 2 Super Admin's' from 'true' to 'false'", () => {
+				return pactum
+					.spec()
+					.patch(url)
+					.withPathParams('id', '$S{test2Id}')
+					.withBearerToken('$S{accessToken}')
+					.withBody(updateUserDto)
+					.expectStatus(200);
+			});
+		});
+
+		describe('Delete user', () => {
+			const url = '/users/{id}';
+
+			it("should delete user 'Test 2 Super Admin'", () => {
+				return pactum
+					.spec()
+					.delete(url)
+					.withPathParams('id', '$S{test2Id}')
+					.withBearerToken('$S{accessToken}')
+					.expectStatus(200);
+			});
+		});
 	});
 });
