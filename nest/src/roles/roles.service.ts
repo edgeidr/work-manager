@@ -24,9 +24,7 @@ export class RolesService {
 
 	async findOne(id: number) {
 		const role = await this.prisma.role.findUnique({
-			where: {
-				id: id,
-			},
+			where: { id },
 		});
 
 		if (!role) throw new NotFoundException();
@@ -35,18 +33,10 @@ export class RolesService {
 	}
 
 	async update(id: number, updateRoleDto: UpdateRoleDto) {
-		const role = await this.prisma.role.findUnique({
-			where: {
-				id: id,
-			},
-		});
-
-		if (!role) throw new NotFoundException();
+		await this.findOne(id);
 
 		return this.prisma.role.update({
-			where: {
-				id: id,
-			},
+			where: { id },
 			data: {
 				name: updateRoleDto.name,
 				actions: {
@@ -57,18 +47,10 @@ export class RolesService {
 	}
 
 	async remove(id: number) {
-		const role = await this.prisma.role.findUnique({
-			where: {
-				id: id,
-			},
-		});
-
-		if (!role) throw new NotFoundException();
+		await this.findOne(id);
 
 		return this.prisma.role.delete({
-			where: {
-				id: id,
-			},
+			where: { id },
 		});
 	}
 }
