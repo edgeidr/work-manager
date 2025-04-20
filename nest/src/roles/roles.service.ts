@@ -7,8 +7,8 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RolesService {
 	constructor(private prisma: PrismaService) {}
 
-	async create(createRoleDto: CreateRoleDto) {
-		const role = await this.prisma.role.create({
+	create(createRoleDto: CreateRoleDto) {
+		return this.prisma.role.create({
 			data: {
 				name: createRoleDto.name,
 				actions: {
@@ -16,8 +16,6 @@ export class RolesService {
 				},
 			},
 		});
-
-		return role;
 	}
 
 	findAll() {
