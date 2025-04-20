@@ -7,6 +7,8 @@ import { SignUpDto } from '../src/auth/dto/sign-up.dto';
 import { SignInDto } from '../src/auth/dto/sign-in.dto';
 import { CreateRoleDto } from '../src/roles/dto/create-role.dto';
 import { UpdateRoleDto } from '../src/roles/dto/update-role.dto';
+import { CreateActionDto } from '../src/actions/dto/create-action.dto';
+import { UpdateActionDto } from '../src/actions/dto/update-action.dto';
 
 describe('App e2e', () => {
 	let app: INestApplication;
@@ -180,16 +182,75 @@ describe('App e2e', () => {
 		});
 	});
 
+	describe('Action', () => {
+		describe('Get actions', () => {
+			const url = '/actions';
+
+			it('should get actions', () => {
+				return pactum.spec().get(url).withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Create action', () => {
+			const url = '/actions';
+
+			it("should create action 'role:creates'", () => {
+				const createActionDto: CreateActionDto = {
+					name: 'role:creates',
+				};
+
+				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createActionDto).expectStatus(201).stores('roleCreateId', 'id');
+			});
+
+			it("should create action 'role:update'", () => {
+				const createActionDto: CreateActionDto = {
+					name: 'role:update',
+				};
+
+				return pactum.spec().post(url).withBearerToken('$S{accessToken}').withBody(createActionDto).expectStatus(201).stores('roleUpdateId', 'id');
+			});
+		});
+
+		describe('Get action by id', () => {
+			const url = '/actions/{id}';
+
+			it("should get action 'role:creates'", () => {
+				return pactum.spec().get(url).withPathParams('id', '$S{roleCreateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+
+			it("should get action 'role:update'", () => {
+				return pactum.spec().get(url).withPathParams('id', '$S{roleUpdateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+
+		describe('Edit action', () => {
+			const url = '/actions/{id}';
+			const updateActionDto: UpdateActionDto = {
+				name: 'role:create',
+			};
+
+			it("should update action 'role:creates' to 'role:create'", () => {
+				return pactum
+					.spec()
+					.patch(url)
+					.withPathParams('id', '$S{roleCreateId}')
+					.withBearerToken('$S{accessToken}')
+					.withBody(updateActionDto)
+					.expectStatus(200);
+			});
+		});
+
+		describe('Delete action', () => {
+			const url = '/actions/{id}';
+
+			it("should delete action 'role:update'", () => {
+				return pactum.spec().delete(url).withPathParams('id', '$S{roleUpdateId}').withBearerToken('$S{accessToken}').expectStatus(200);
+			});
+		});
+	});
+
 	describe('User', () => {
 		describe('Get me', () => {});
 		describe('Edit user', () => {});
-	});
-
-	describe('Action', () => {
-		describe('Get actions', () => {});
-		describe('Create action', () => {});
-		describe('Get action by id', () => {});
-		describe('Edit action', () => {});
-		describe('Delete action', () => {});
 	});
 });
