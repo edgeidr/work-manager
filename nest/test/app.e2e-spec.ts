@@ -10,7 +10,6 @@ import { UpdateRoleDto } from '../src/roles/dto/update-role.dto';
 import { CreateActionDto } from '../src/actions/dto/create-action.dto';
 import { UpdateActionDto } from '../src/actions/dto/update-action.dto';
 import { UpdateUserDto } from '../src/users/dto/update-user.dto';
-import { inspect } from 'util';
 
 describe('App e2e', () => {
 	let app: INestApplication;
