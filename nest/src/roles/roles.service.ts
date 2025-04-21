@@ -8,11 +8,11 @@ export class RolesService {
 	constructor(private prisma: PrismaService) {}
 
 	create(createRoleDto: CreateRoleDto) {
-		const { actionIds, ...incompleteDto } = createRoleDto;
+		const { actionIds, ...createRoleData } = createRoleDto;
 
 		return this.prisma.role.create({
 			data: {
-				...incompleteDto,
+				...createRoleData,
 				roleActions: {
 					createMany: {
 						data:
@@ -42,12 +42,12 @@ export class RolesService {
 	async update(id: number, updateRoleDto: UpdateRoleDto) {
 		await this.findOne(id);
 
-		const { actionIds, ...incompleteDto } = updateRoleDto;
+		const { actionIds, ...updateRoleData } = updateRoleDto;
 
 		return this.prisma.role.update({
 			where: { id },
 			data: {
-				...incompleteDto,
+				...updateRoleData,
 				roleActions: {
 					set: actionIds?.map((actionId) => ({
 						roleId_actionId: {

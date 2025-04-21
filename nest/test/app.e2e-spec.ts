@@ -52,27 +52,27 @@ describe('App e2e', () => {
 			};
 
 			it('should throw if email is empty', () => {
-				const { email, ...incompleteDto } = signUpDto;
+				const { email, ...signUpData } = signUpDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signUpData).expectStatus(400);
 			});
 
 			it('should throw if password is empty', () => {
-				const { password, ...incompleteDto } = signUpDto;
+				const { password, ...signUpData } = signUpDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signUpData).expectStatus(400);
 			});
 
 			it('should throw if firstName is empty', () => {
-				const { firstName, ...incompleteDto } = signUpDto;
+				const { firstName, ...signUpData } = signUpDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signUpData).expectStatus(400);
 			});
 
 			it('should throw if lastName is empty', () => {
-				const { lastName, ...incompleteDto } = signUpDto;
+				const { lastName, ...signUpData } = signUpDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signUpData).expectStatus(400);
 			});
 
 			it('should throw if no body is provided', () => {
@@ -99,15 +99,15 @@ describe('App e2e', () => {
 			};
 
 			it('should throw if email is empty', () => {
-				const { email, ...incompleteDto } = signInDto;
+				const { email, ...signInData } = signInDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signInData).expectStatus(400);
 			});
 
 			it('should throw if password is empty', () => {
-				const { password, ...incompleteDto } = signInDto;
+				const { password, ...signInData } = signInDto;
 
-				return pactum.spec().post(url).withBody(incompleteDto).expectStatus(400);
+				return pactum.spec().post(url).withBody(signInData).expectStatus(400);
 			});
 
 			it('should throw if no body is provided', () => {
@@ -341,57 +341,57 @@ describe('App e2e', () => {
 			};
 
 			it('should throw if email is empty', () => {
-				const { email, ...incompleteDto } = createUserDto;
+				const { email, ...createUserData } = createUserDto;
 
 				return pactum
 					.spec()
 					.post(url)
 					.withBearerToken('$S{accessToken}')
-					.withBody(incompleteDto)
+					.withBody(createUserData)
 					.expectStatus(400);
 			});
 
 			it('should throw if password is empty', () => {
-				const { password, ...incompleteDto } = createUserDto;
+				const { password, ...createUserData } = createUserDto;
 
 				return pactum
 					.spec()
 					.post(url)
 					.withBearerToken('$S{accessToken}')
-					.withBody(incompleteDto)
+					.withBody(createUserData)
 					.expectStatus(400);
 			});
 
 			it('should throw if firstName is empty', () => {
-				const { firstName, ...incompleteDto } = createUserDto;
+				const { firstName, ...createUserData } = createUserDto;
 
 				return pactum
 					.spec()
 					.post(url)
 					.withBearerToken('$S{accessToken}')
-					.withBody(incompleteDto)
+					.withBody(createUserData)
 					.expectStatus(400);
 			});
 
 			it('should throw if lastName is empty', () => {
-				const { lastName, ...incompleteDto } = createUserDto;
+				const { lastName, ...createUserData } = createUserDto;
 
 				return pactum
 					.spec()
 					.post(url)
 					.withBearerToken('$S{accessToken}')
-					.withBody(incompleteDto)
+					.withBody(createUserData)
 					.expectStatus(400);
 			});
 
 			it('should throw if isActive is empty', () => {
-				const { isActive, ...incompleteDto } = createUserDto;
+				const { isActive, ...createUserData } = createUserDto;
 
 				return pactum
 					.spec()
 					.post(url)
 					.withBearerToken('$S{accessToken}')
-					.withBody(incompleteDto)
+					.withBody(createUserData)
 					.expectStatus(400);
 			});
 

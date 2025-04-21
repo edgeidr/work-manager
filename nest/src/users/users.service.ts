@@ -9,12 +9,12 @@ export class UsersService {
 	constructor(private prisma: PrismaService) {}
 
 	async create(createUserDto: CreateUserDto) {
-		const { password, roleIds, ...incompleteDto } = createUserDto;
+		const { password, roleIds, ...createUserData } = createUserDto;
 		const hashedPassword = await hash(createUserDto.password);
 
 		return this.prisma.user.create({
 			data: {
-				...incompleteDto,
+				...createUserData,
 				password: hashedPassword,
 				userRoles: {
 					createMany: {
@@ -51,12 +51,12 @@ export class UsersService {
 	async update(id: number, updateUserDto: UpdateUserDto) {
 		await this.findOne(id);
 
-		const { roleIds, ...incompleteDto } = updateUserDto;
+		const { roleIds, ...updateUserData } = updateUserDto;
 
 		return this.prisma.user.update({
 			where: { id },
 			data: {
-				...incompleteDto,
+				...updateUserData,
 				userRoles: {
 					set: roleIds?.map((roleId) => ({
 						userId_roleId: {
