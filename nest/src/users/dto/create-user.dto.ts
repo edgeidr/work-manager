@@ -1,5 +1,30 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+	IsArray,
+	IsBoolean,
+	IsEmail,
+	IsEnum,
+	IsInt,
+	IsNotEmpty,
+	IsOptional,
+	IsString,
+	ValidateNested,
+} from 'class-validator';
+
+export enum Scope {
+	ANY = 'ANY',
+	OWN = 'OWN',
+}
+
+export class UserActionDto {
+	@IsNotEmpty()
+	@IsInt()
+	actionId: number;
+
+	@IsNotEmpty()
+	@IsEnum(Scope)
+	scope: Scope;
+}
 
 export class CreateUserDto {
 	@IsNotEmpty()
@@ -27,4 +52,10 @@ export class CreateUserDto {
 	@Type(() => Number)
 	@IsInt({ each: true })
 	roleIds?: number[];
+
+	@IsOptional()
+	@IsArray()
+	@ValidateNested({ each: true })
+	@Type(() => UserActionDto)
+	userActions?: UserActionDto[];
 }

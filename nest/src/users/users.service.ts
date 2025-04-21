@@ -9,7 +9,7 @@ export class UsersService {
 	constructor(private prisma: PrismaService) {}
 
 	async create(createUserDto: CreateUserDto) {
-		const { password, roleIds, ...createUserData } = createUserDto;
+		const { password, roleIds, userActions, ...createUserData } = createUserDto;
 		const hashedPassword = await hash(createUserDto.password);
 
 		return this.prisma.user.create({
@@ -21,6 +21,15 @@ export class UsersService {
 						data:
 							roleIds?.map((roleId) => ({
 								roleId: roleId,
+							})) || [],
+					},
+				},
+				userActions: {
+					createMany: {
+						data:
+							userActions?.map(({ actionId, scope }) => ({
+								actionId: actionId,
+								scope: scope,
 							})) || [],
 					},
 				},
@@ -51,7 +60,7 @@ export class UsersService {
 	async update(id: number, updateUserDto: UpdateUserDto) {
 		await this.findOne(id);
 
-		const { roleIds, ...updateUserData } = updateUserDto;
+		const { roleIds, userActions, ...updateUserData } = updateUserDto;
 
 		return this.prisma.user.update({
 			where: { id },
@@ -63,6 +72,15 @@ export class UsersService {
 							roleId: roleId,
 							userId: id,
 						},
+					})),
+				},
+				userActions: {
+					set: userActions?.map(({ actionId, scope }) => ({
+						userId_actionId: {
+							actionId: actionId,
+							userId: id,
+						},
+						scope: scope,
 					})),
 				},
 			},
