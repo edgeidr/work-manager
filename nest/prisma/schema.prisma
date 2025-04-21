@@ -57,8 +57,8 @@ model RoleAction {
 	roleId Int
 	actionId Int
 
-	role Role @relation(fields: [roleId], references: [id])
-	action Action @relation(fields: [actionId], references: [id])
+	role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+	action Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
 
 	@@id([roleId, actionId])
 }
@@ -67,8 +67,8 @@ model UserRole {
 	userId Int
 	roleId Int
 
-	user User @relation(fields: [userId], references: [id])
-	role Role @relation(fields: [roleId], references: [id])
+	user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+	role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
 	@@id([userId, roleId])
 }
@@ -83,8 +83,8 @@ model UserAction {
 	actionId Int
 	scope Scope
 
-	user User @relation(fields: [userId], references: [id])
-	action Action @relation(fields: [actionId], references: [id])
+	user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+	action Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
 
 	@@id([userId, actionId])
 }
