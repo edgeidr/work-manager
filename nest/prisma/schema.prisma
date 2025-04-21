@@ -5,48 +5,86 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+	provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  password String
-  firstName String
-  lastName String
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+	id Int @id @default(autoincrement())
+	email String @unique
+	password String
+	firstName String
+	lastName String
+	isActive Boolean @default(true)
+	createdAt DateTime @default(now())
+	updatedAt DateTime @updatedAt
 
-  roles Role[]
+	userRoles UserRole[]
+	userActions UserAction[]
 
-  @@map("users")
+	@@map("users")
 }
 
 model Role {
-  id Int @id @default(autoincrement())
-  name String @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+	id Int @id @default(autoincrement())
+	name String @unique
+	createdAt DateTime @default(now())
+	updatedAt DateTime @updatedAt
 
-  users User[]
-  actions Action[]
+	userRoles UserRole[]
+	roleActions RoleAction[]
 
-  @@map("roles")
+	@@map("roles")
 }
 
 model Action {
-  id Int @id @default(autoincrement())
-  name String @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+	id Int @id @default(autoincrement())
+	name String @unique
+	createdAt DateTime @default(now())
+	updatedAt DateTime @updatedAt
 
-  roles Role[]
+	roleActions RoleAction[]
+	userActions UserAction[]
 
-  @@map("actions")
+	@@map("actions")
+}
+
+model RoleAction {
+	roleId Int
+	actionId Int
+
+	role Role @relation(fields: [roleId], references: [id])
+	action Action @relation(fields: [actionId], references: [id])
+
+	@@id([roleId, actionId])
+}
+
+model UserRole {
+	userId Int
+	roleId Int
+
+	user User @relation(fields: [userId], references: [id])
+	role Role @relation(fields: [roleId], references: [id])
+
+	@@id([userId, roleId])
+}
+
+enum Scope {
+	ANY
+	OWN
+}
+
+model UserAction {
+	userId Int
+	actionId Int
+	scope Scope
+
+	user User @relation(fields: [userId], references: [id])
+	action Action @relation(fields: [actionId], references: [id])
+
+	@@id([userId, actionId])
 }
