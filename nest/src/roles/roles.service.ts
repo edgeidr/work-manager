@@ -8,11 +8,18 @@ export class RolesService {
 	constructor(private prisma: PrismaService) {}
 
 	create(createRoleDto: CreateRoleDto) {
+		const { actionIds, ...incompleteDto } = createRoleDto;
+
 		return this.prisma.role.create({
 			data: {
-				name: createRoleDto.name,
-				actions: {
-					connect: createRoleDto.actionIds?.map((id) => ({ id })),
+				...incompleteDto,
+				roleActions: {
+					createMany: {
+						data:
+							actionIds?.map((id) => ({
+								actionId: id,
+							})) || [],
+					},
 				},
 			},
 		});
@@ -35,12 +42,19 @@ export class RolesService {
 	async update(id: number, updateRoleDto: UpdateRoleDto) {
 		await this.findOne(id);
 
+		const { actionIds, ...incompleteDto } = updateRoleDto;
+
 		return this.prisma.role.update({
 			where: { id },
 			data: {
-				name: updateRoleDto.name,
-				actions: {
-					set: updateRoleDto.actionIds?.map((id) => ({ id })),
+				...incompleteDto,
+				roleActions: {
+					set: actionIds?.map((actionId) => ({
+						roleId_actionId: {
+							roleId: id,
+							actionId: actionId,
+						},
+					})),
 				},
 			},
 		});
