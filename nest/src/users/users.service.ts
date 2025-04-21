@@ -16,8 +16,13 @@ export class UsersService {
 			data: {
 				...incompleteDto,
 				password: hashedPassword,
-				roles: {
-					connect: roleIds?.map((id) => ({ id })),
+				userRoles: {
+					createMany: {
+						data:
+							roleIds?.map((roleId) => ({
+								roleId: roleId,
+							})) || [],
+					},
 				},
 			},
 			omit: {
@@ -46,9 +51,21 @@ export class UsersService {
 	async update(id: number, updateUserDto: UpdateUserDto) {
 		await this.findOne(id);
 
+		const { roleIds, ...incompleteDto } = updateUserDto;
+
 		return this.prisma.user.update({
 			where: { id },
-			data: { ...updateUserDto },
+			data: {
+				...incompleteDto,
+				userRoles: {
+					set: roleIds?.map((roleId) => ({
+						userId_roleId: {
+							roleId: roleId,
+							userId: id,
+						},
+					})),
+				},
+			},
 		});
 	}
 
