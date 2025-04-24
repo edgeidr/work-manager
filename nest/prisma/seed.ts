@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { actions } from './seed-data/actions';
 import { roles } from './seed-data/roles';
-import { superadmin, admin, testuser } from './seed-data/users';
+import { superadmin, admin } from './seed-data/users';
 import { hash } from 'argon2';
 
 const prisma = new PrismaClient();
@@ -64,7 +64,6 @@ async function main() {
 
 	const superadminRoleId = createdRoles.find(({ name }) => name === 'Superadmin')?.id;
 	const adminRoleId = createdRoles.find(({ name }) => name === 'Admin')?.id;
-	const userRoleId = createdRoles.find(({ name }) => name === 'User')?.id;
 
 	await createUser(
 		superadmin,
@@ -75,11 +74,6 @@ async function main() {
 		admin,
 		adminRoleId,
 		createdActions.map(({ id }) => ({ actionId: id, scope: 'ANY' })),
-	);
-	await createUser(
-		testuser,
-		userRoleId,
-		createdActions.map(({ id }) => ({ actionId: id, scope: 'OWN' })),
 	);
 
 	console.log('Seeding done');

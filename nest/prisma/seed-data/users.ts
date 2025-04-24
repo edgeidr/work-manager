@@ -15,11 +15,3 @@ export const admin: CreateUserDto = {
 	lastName: 'User',
 	isActive: true,
 };
-
-export const testuser: CreateUserDto = {
-	email: 'testuser@gmail.com',
-	password: 'p@ssword',
-	firstName: 'Test',
-	lastName: 'User',
-	isActive: true,
-};
