@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { hash, verify } from 'argon2';
 import { SignInDto } from './dto/sign-in.dto';
@@ -15,6 +15,17 @@ export class AuthService {
 	) {}
 
 	async signUp(signUpDto: SignUpDto) {
+		const userRole = await this.prisma.role.findUnique({
+			where: {
+				name: 'User',
+			},
+			include: {
+				roleActions: true,
+			},
+		});
+
+		if (!userRole) throw new UnauthorizedException();
+
 		const hashedPassword = await hash(signUpDto.password);
 		const user = await this.prisma.user.create({
 			data: {
@@ -23,6 +34,19 @@ export class AuthService {
 				firstName: signUpDto.firstName,
 				lastName: signUpDto.lastName,
 				isActive: true,
+				userRoles: {
+					create: {
+						roleId: userRole.id,
+					},
+				},
+				userActions: {
+					createMany: {
+						data: userRole.roleActions.map(({ actionId }) => ({
+							actionId: actionId,
+							scope: 'OWN',
+						})),
+					},
+				},
 			},
 		});
 
@@ -36,11 +60,11 @@ export class AuthService {
 			},
 		});
 
-		if (!user) throw new ForbiddenException('Account does not exist!');
+		if (!user) throw new UnauthorizedException('Account does not exist!');
 
 		const passwordMatches = await verify(user.password, signInDto.password);
 
-		if (!passwordMatches) throw new ForbiddenException('Account does not exist');
+		if (!passwordMatches) throw new UnauthorizedException('Account does not exist');
 
 		return this.signToken(user.id, user.email);
 	}
