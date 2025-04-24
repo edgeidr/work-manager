@@ -1,7 +1,7 @@
 import * as pactum from 'pactum';
 import { setupApp, teardownApp } from './utils/setup';
 import { HttpStatus } from '@nestjs/common';
-import { notEquals, notIncludes } from 'pactum-matchers';
+import { notEquals } from 'pactum-matchers';
 
 describe('Auth E2E', () => {
 	beforeAll(setupApp);
