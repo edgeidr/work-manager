@@ -92,6 +92,9 @@ export class UsersService {
 
 		return this.prisma.user.delete({
 			where: { id },
+			omit: {
+				password: true,
+			},
 		});
 	}
 }
