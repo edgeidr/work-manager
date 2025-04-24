@@ -48,9 +48,16 @@ export class AuthService {
 					},
 				},
 			},
+			omit: {
+				password: true,
+			},
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
 		});
 
-		return this.signToken(user.id, user.email);
+		return user;
 	}
 
 	async signIn(signInDto: SignInDto) {
