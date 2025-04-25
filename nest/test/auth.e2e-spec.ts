@@ -59,8 +59,7 @@ describe('Auth E2E', () => {
 						roleId: notEquals(roleId),
 					})),
 				})
-				.stores('mockUserId', 'id')
-				.inspect();
+				.stores('mockUserId', 'id');
 		});
 	});
 
