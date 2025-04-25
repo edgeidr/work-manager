@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
@@ -12,20 +12,28 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 	) {
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-			secretOrKey: config.get('JWT_SECRET', ''),
+			secretOrKey: config.get('JWT_ACCESS_TOKEN_SECRET', ''),
+			passReqToCallback: true,
 		});
 	}
 
-	async validate(payload: { sub: number; email: string }) {
-		const user = await this.prisma.user.findUnique({
+	async validate(request: Request, payload: { sub: number; email: string }) {
+		const deviceId = request.headers['device-id'] as string;
+		const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request) as string;
+
+		const session = await this.prisma.session.findFirst({
 			where: {
-				id: payload.sub,
+				userId: payload.sub,
+				deviceId: deviceId,
+				accessToken: {
+					value: accessToken,
+				},
 			},
-			omit: {
-				password: true,
-			},
+			include: { user: true },
 		});
 
-		return user;
+		if (!session) throw new UnauthorizedException();
+
+		return session.user;
 	}
 }

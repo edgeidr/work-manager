@@ -5,6 +5,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
+import { randomUUID } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -73,24 +74,59 @@ export class AuthService {
 
 		if (!passwordMatches) throw new UnauthorizedException('Account does not exist');
 
-		return this.signToken(user.id, user.email);
+		const { accessToken, refreshToken } = await this.signToken(user.id, user.email);
+		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
+		const refreshTokenDuration = signInDto.keepMeLoggedIn
+			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 60)
+			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 43200);
+		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
+		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
+		const deviceId = randomUUID();
+
+		await this.prisma.user.update({
+			where: { id: user.id },
+			data: {
+				sessions: {
+					create: {
+						deviceId: deviceId,
+						accessToken: {
+							create: {
+								value: accessToken,
+								expiresAt: accessTokenExpiration,
+							},
+						},
+						refreshToken: {
+							create: {
+								value: refreshToken,
+								expiresAt: refreshTokenExpiration,
+							},
+						},
+					},
+				},
+			},
+		});
+
+		return { accessToken, refreshToken, deviceId };
 	}
 
 	signOut() {
 		return 'signOut';
 	}
 
-	async signToken(userId: number, email: string): Promise<{ accessToken: string }> {
+	async signToken(userId: number, email: string): Promise<{ accessToken: string; refreshToken: string }> {
 		const payload = {
 			sub: userId,
 			email,
 		};
 
-		const token = await this.jwt.signAsync(payload, {
-			expiresIn: '15m',
-			secret: this.config.get('JWT_SECRET'),
+		const accessToken = await this.jwt.signAsync(payload, {
+			secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
 		});
 
-		return { accessToken: token };
+		const refreshToken = await this.jwt.signAsync(payload, {
+			secret: this.config.get('JWT_REFRESH_TOKEN_SECRET'),
+		});
+
+		return { accessToken, refreshToken };
 	}
 }
