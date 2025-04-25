@@ -1,7 +1,8 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Headers, HttpCode, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -22,5 +23,11 @@ export class AuthController {
 	@Post('signOut')
 	signOut() {
 		return this.authService.signOut();
+	}
+
+	@HttpCode(200)
+	@Post('refresh')
+	refreshToken(@Headers('device-id') deviceId: string, @Body() refreshTokenDto: RefreshTokenDto) {
+		return this.authService.refreshToken(deviceId, refreshTokenDto);
 	}
 }

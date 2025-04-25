@@ -11,5 +11,5 @@ export class SignInDto {
 
 	@IsOptional()
 	@IsBoolean()
-	keepMeLoggedIn?: boolean;
+	keepMeLoggedIn: boolean = false;
 }

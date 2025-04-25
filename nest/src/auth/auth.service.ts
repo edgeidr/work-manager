@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { randomUUID } from 'crypto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -74,46 +75,59 @@ export class AuthService {
 
 		if (!passwordMatches) throw new UnauthorizedException('Account does not exist');
 
-		const { accessToken, refreshToken } = await this.signToken(user.id, user.email);
-		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
-		const refreshTokenDuration = signInDto.keepMeLoggedIn
-			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 60)
-			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 43200);
-		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
-		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
-		const deviceId = randomUUID();
+		const { deviceId, accessToken, refreshToken } = await this.generateTokens(
+			user.id,
+			user.email,
+			signInDto.keepMeLoggedIn,
+		);
 
-		await this.prisma.user.update({
-			where: { id: user.id },
+		await this.prisma.session.create({
 			data: {
-				sessions: {
+				userId: user.id,
+				deviceId: deviceId,
+				accessToken: {
 					create: {
-						deviceId: deviceId,
-						accessToken: {
-							create: {
-								value: accessToken,
-								expiresAt: accessTokenExpiration,
-							},
-						},
-						refreshToken: {
-							create: {
-								value: refreshToken,
-								expiresAt: refreshTokenExpiration,
-							},
-						},
+						value: accessToken.value,
+						expiresAt: accessToken.expiresAt,
+					},
+				},
+				refreshToken: {
+					create: {
+						value: refreshToken.value,
+						expiresAt: refreshToken.expiresAt,
 					},
 				},
 			},
 		});
 
-		return { accessToken, refreshToken, deviceId };
+		return {
+			deviceId,
+			accessToken: accessToken.value,
+			refreshToken: refreshToken.value,
+		};
 	}
 
 	signOut() {
 		return 'signOut';
 	}
 
-	async signToken(userId: number, email: string): Promise<{ accessToken: string; refreshToken: string }> {
+	async generateTokens(
+		userId: number,
+		email: string,
+		keepMeLoggedIn: boolean,
+	): Promise<{
+		deviceId: string;
+		accessToken: { value: string; expiresAt: Date };
+		refreshToken: { value: string; expiresAt: Date };
+	}> {
+		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
+		const refreshTokenDuration = keepMeLoggedIn
+			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
+			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
+		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
+		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
+		const deviceId = randomUUID();
+
 		const payload = {
 			sub: userId,
 			email,
@@ -127,6 +141,59 @@ export class AuthService {
 			secret: this.config.get('JWT_REFRESH_TOKEN_SECRET'),
 		});
 
-		return { accessToken, refreshToken };
+		return {
+			deviceId,
+			accessToken: {
+				value: accessToken,
+				expiresAt: accessTokenExpiration,
+			},
+			refreshToken: {
+				value: refreshToken,
+				expiresAt: refreshTokenExpiration,
+			},
+		};
+	}
+
+	async refreshToken(deviceId: string, refreshTokenDto: RefreshTokenDto) {
+		const session = await this.prisma.session.findFirst({
+			where: {
+				deviceId: deviceId,
+				refreshToken: {
+					value: refreshTokenDto.refreshToken,
+				},
+			},
+			include: {
+				user: true,
+			},
+		});
+
+		if (!session) throw new UnauthorizedException();
+
+		const { id: userId, email } = session.user;
+		const { accessToken, refreshToken } = await this.generateTokens(userId, email, refreshTokenDto.keepMeLoggedIn);
+
+		await this.prisma.session.update({
+			where: { id: session.id },
+			data: {
+				accessToken: {
+					update: {
+						value: accessToken.value,
+						expiresAt: accessToken.expiresAt,
+					},
+				},
+				refreshToken: {
+					update: {
+						value: refreshToken.value,
+						expiresAt: refreshToken.expiresAt,
+					},
+				},
+			},
+		});
+
+		return {
+			deviceId,
+			accessToken: accessToken.value,
+			refreshToken: refreshToken.value,
+		};
 	}
 }
