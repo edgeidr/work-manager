@@ -2,6 +2,7 @@ import * as pactum from 'pactum';
 import { setupApp, teardownApp } from './utils/setup';
 import { HttpStatus } from '@nestjs/common';
 import { notEquals } from 'pactum-matchers';
+import { itShouldThrowIfUnauthenticated } from './utils/shared-auth-test';
 
 describe('Auth E2E', () => {
 	beforeAll(setupApp);
@@ -115,6 +116,8 @@ describe('Auth E2E', () => {
 
 	describe('Delete mock data', () => {
 		const url = '/users/{id}';
+
+		itShouldThrowIfUnauthenticated('delete', url);
 
 		it('should return mock user', () => {
 			return pactum
