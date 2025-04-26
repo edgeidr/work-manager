@@ -130,5 +130,6 @@ model Session {
 	accessToken AccessToken?
 	refreshToken RefreshToken?
 
+	@@unique([userId, deviceId])
 	@@map("sessions")
 }
