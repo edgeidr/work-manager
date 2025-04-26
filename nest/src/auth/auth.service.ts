@@ -64,9 +64,7 @@ export class AuthService {
 
 	async signIn(signInDto: SignInDto) {
 		const user = await this.prisma.user.findUnique({
-			where: {
-				email: signInDto.email,
-			},
+			where: { email: signInDto.email },
 		});
 
 		if (!user) throw new UnauthorizedException('Account does not exist!');
@@ -81,8 +79,14 @@ export class AuthService {
 			signInDto.keepMeLoggedIn,
 		);
 
-		await this.prisma.session.create({
-			data: {
+		await this.prisma.session.upsert({
+			where: {
+				userId_deviceId: {
+					userId: user.id,
+					deviceId: deviceId,
+				},
+			},
+			create: {
 				userId: user.id,
 				deviceId: deviceId,
 				accessToken: {
@@ -93,6 +97,20 @@ export class AuthService {
 				},
 				refreshToken: {
 					create: {
+						value: refreshToken.value,
+						expiresAt: refreshToken.expiresAt,
+					},
+				},
+			},
+			update: {
+				accessToken: {
+					update: {
+						value: accessToken.value,
+						expiresAt: accessToken.expiresAt,
+					},
+				},
+				refreshToken: {
+					update: {
 						value: refreshToken.value,
 						expiresAt: refreshToken.expiresAt,
 					},
@@ -109,49 +127,6 @@ export class AuthService {
 
 	signOut() {
 		return 'signOut';
-	}
-
-	async generateTokens(
-		userId: number,
-		email: string,
-		keepMeLoggedIn: boolean,
-	): Promise<{
-		deviceId: string;
-		accessToken: { value: string; expiresAt: Date };
-		refreshToken: { value: string; expiresAt: Date };
-	}> {
-		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
-		const refreshTokenDuration = keepMeLoggedIn
-			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
-			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
-		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
-		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
-		const deviceId = randomUUID();
-
-		const payload = {
-			sub: userId,
-			email,
-		};
-
-		const accessToken = await this.jwt.signAsync(payload, {
-			secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
-		});
-
-		const refreshToken = await this.jwt.signAsync(payload, {
-			secret: this.config.get('JWT_REFRESH_TOKEN_SECRET'),
-		});
-
-		return {
-			deviceId,
-			accessToken: {
-				value: accessToken,
-				expiresAt: accessTokenExpiration,
-			},
-			refreshToken: {
-				value: refreshToken,
-				expiresAt: refreshTokenExpiration,
-			},
-		};
 	}
 
 	async refreshToken(deviceId: string, refreshTokenDto: RefreshTokenDto) {
@@ -194,6 +169,50 @@ export class AuthService {
 			deviceId,
 			accessToken: accessToken.value,
 			refreshToken: refreshToken.value,
+		};
+	}
+
+	async generateTokens(
+		userId: number,
+		email: string,
+		keepMeLoggedIn: boolean,
+	): Promise<{
+		deviceId: string;
+		accessToken: { value: string; expiresAt: Date };
+		refreshToken: { value: string; expiresAt: Date };
+	}> {
+		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
+		const refreshTokenDuration = keepMeLoggedIn
+			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
+			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
+		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
+		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
+		const deviceId = randomUUID();
+
+		const payload = {
+			sub: userId,
+			email,
+			deviceId,
+		};
+
+		const accessToken = await this.jwt.signAsync(payload, {
+			secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
+		});
+
+		const refreshToken = await this.jwt.signAsync(payload, {
+			secret: this.config.get('JWT_REFRESH_TOKEN_SECRET'),
+		});
+
+		return {
+			deviceId,
+			accessToken: {
+				value: accessToken,
+				expiresAt: accessTokenExpiration,
+			},
+			refreshToken: {
+				value: refreshToken,
+				expiresAt: refreshTokenExpiration,
+			},
 		};
 	}
 }
