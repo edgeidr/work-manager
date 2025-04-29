@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Scope } from '@prisma/client';
 import { actions } from './seed-data/actions';
 import { roles } from './seed-data/roles';
 import { superadmin, admin } from './seed-data/users';
@@ -68,12 +68,12 @@ async function main() {
 	await createUser(
 		superadmin,
 		superadminRoleId,
-		createdActions.map(({ id }) => ({ actionId: id, scope: 'ANY' })),
+		createdActions.map(({ id }) => ({ actionId: id, scope: Scope.ANY })),
 	);
 	await createUser(
 		admin,
 		adminRoleId,
-		createdActions.map(({ id }) => ({ actionId: id, scope: 'ANY' })),
+		createdActions.map(({ id }) => ({ actionId: id, scope: Scope.ANY })),
 	);
 
 	console.log('Seeding done');
