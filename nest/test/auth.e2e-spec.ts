@@ -110,7 +110,41 @@ describe('Auth E2E', () => {
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
 				.expectBodyContains('accessToken')
-				.stores('accessToken', 'accessToken');
+				.expectBodyContains('refreshToken')
+				.expectBodyContains('deviceId')
+				.stores('accessToken', 'accessToken')
+				.stores('refreshToken', 'refreshToken')
+				.stores('deviceId', 'deviceId');
+		});
+
+		it('should signin', () => {
+			return pactum
+				.spec()
+				.post(url)
+				.withBody(mockData)
+				.expectStatus(HttpStatus.OK)
+				.expectBodyContains('accessToken')
+				.expectBodyContains('refreshToken')
+				.expectBodyContains('deviceId')
+				.stores('accessToken', 'accessToken')
+				.stores('refreshToken', 'refreshToken')
+				.stores('deviceId', 'deviceId');
+		});
+	});
+
+	describe('Refresh token', () => {
+		const url = '/auth/refresh';
+		const mockData = {
+			refreshToken: 'fakeRefreshToken',
+		};
+
+		it('should throw if refresh token is invalid', () => {
+			return pactum
+				.spec()
+				.post(url)
+				.withHeaders('Device-Id', '$S{deviceId}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.UNAUTHORIZED);
 		});
 	});
 
@@ -125,6 +159,7 @@ describe('Auth E2E', () => {
 				.get(url)
 				.withPathParams('id', '$S{mockUserId}')
 				.withBearerToken('$S{accessToken}')
+				.withHeaders('Device-Id', '$S{deviceId}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
 					email: mockUser.email,
@@ -139,6 +174,7 @@ describe('Auth E2E', () => {
 				.delete(url)
 				.withPathParams('id', '$S{mockUserId}')
 				.withBearerToken('$S{accessToken}')
+				.withHeaders('Device-Id', '$S{deviceId}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
 					email: mockUser.email,
