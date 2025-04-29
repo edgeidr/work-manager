@@ -1,3 +1,4 @@
+import { Scope } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
 	IsArray,
@@ -10,11 +11,6 @@ import {
 	IsString,
 	ValidateNested,
 } from 'class-validator';
-
-export enum Scope {
-	ANY = 'ANY',
-	OWN = 'OWN',
-}
 
 export class UserActionDto {
 	@IsNotEmpty()

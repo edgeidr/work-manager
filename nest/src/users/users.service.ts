@@ -66,23 +66,31 @@ export class UsersService {
 			where: { id },
 			data: {
 				...updateUserData,
-				userRoles: {
-					set: roleIds?.map((roleId) => ({
-						userId_roleId: {
-							roleId: roleId,
-							userId: id,
+				...(roleIds && {
+					userRoles: {
+						deleteMany: {},
+						createMany: {
+							data: roleIds.map((roleId) => ({
+								roleId,
+							})),
 						},
-					})),
-				},
-				userActions: {
-					set: userActions?.map(({ actionId, scope }) => ({
-						userId_actionId: {
-							actionId: actionId,
-							userId: id,
+					},
+				}),
+				...(userActions && {
+					userActions: {
+						deleteMany: {},
+						createMany: {
+							data: userActions.map(({ actionId, scope }) => ({
+								actionId,
+								scope,
+							})),
 						},
-						scope: scope,
-					})),
-				},
+					},
+				}),
+			},
+			include: {
+				userRoles: true,
+				userActions: true,
 			},
 		});
 	}
