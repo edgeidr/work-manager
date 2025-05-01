@@ -35,6 +35,10 @@ export class UsersService {
 					},
 				},
 			},
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
 			omit: {
 				password: true,
 			},
@@ -48,6 +52,10 @@ export class UsersService {
 	async findOne(id: number) {
 		const user = await this.prisma.user.findUnique({
 			where: { id },
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
 			omit: {
 				password: true,
 			},
