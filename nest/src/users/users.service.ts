@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hash } from 'argon2';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
@@ -104,5 +105,9 @@ export class UsersService {
 				password: true,
 			},
 		});
+	}
+
+	async getMe(user: User) {
+		return user;
 	}
 }

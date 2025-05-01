@@ -13,7 +13,7 @@ export class UsersController {
 
 	@Get('me')
 	getMe(@Auth() user: User) {
-		return user;
+		return this.usersService.getMe(user);
 	}
 
 	@Post()
