@@ -114,7 +114,8 @@ describe('Auth E2E', () => {
 				.expectBodyContains('deviceId')
 				.stores('accessToken', 'accessToken')
 				.stores('refreshToken', 'refreshToken')
-				.stores('deviceId', 'deviceId');
+				.stores('deviceId', 'deviceId')
+				.stores('user', 'user');
 		});
 	});
 
