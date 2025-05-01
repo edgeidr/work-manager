@@ -63,13 +63,26 @@ export class AuthService {
 	}
 
 	async signIn(signInDto: SignInDto) {
-		const user = await this.prisma.user.findUnique({
-			where: { email: signInDto.email },
+		const user = await this.prisma.user.findFirst({
+			where: {
+				email: signInDto.email,
+				isActive: true,
+			},
+			select: {
+				id: true,
+				firstName: true,
+				lastName: true,
+				email: true,
+				password: true,
+				userActions: true,
+				userRoles: true,
+			},
 		});
 
 		if (!user) throw new UnauthorizedException('Account does not exist!');
 
-		const passwordMatches = await verify(user.password, signInDto.password);
+		const { password, ...userData } = user;
+		const passwordMatches = await verify(password, signInDto.password);
 
 		if (!passwordMatches) throw new UnauthorizedException('Account does not exist');
 
@@ -122,6 +135,7 @@ export class AuthService {
 			deviceId,
 			accessToken: accessToken.value,
 			refreshToken: refreshToken.value,
+			user: userData,
 		};
 	}
 
