@@ -116,20 +116,6 @@ describe('Auth E2E', () => {
 				.stores('refreshToken', 'refreshToken')
 				.stores('deviceId', 'deviceId');
 		});
-
-		it('should signin', () => {
-			return pactum
-				.spec()
-				.post(url)
-				.withBody(mockData)
-				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('accessToken')
-				.expectBodyContains('refreshToken')
-				.expectBodyContains('deviceId')
-				.stores('accessToken', 'accessToken')
-				.stores('refreshToken', 'refreshToken')
-				.stores('deviceId', 'deviceId');
-		});
 	});
 
 	describe('Refresh token', () => {
