@@ -29,7 +29,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 					value: accessToken,
 				},
 			},
-			include: { user: true },
+			include: {
+				user: {
+					include: {
+						userRoles: true,
+						userActions: true,
+					},
+					omit: {
+						password: true,
+					},
+				},
+			},
 		});
 
 		if (!session) throw new UnauthorizedException();
