@@ -28,6 +28,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 				accessToken: {
 					value: accessToken,
 				},
+				user: {
+					isActive: true,
+				},
 			},
 			include: {
 				user: {
