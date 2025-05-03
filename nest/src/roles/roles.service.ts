@@ -22,6 +22,9 @@ export class RolesService {
 					},
 				},
 			},
+			include: {
+				roleActions: true,
+			},
 		});
 	}
 
@@ -32,6 +35,9 @@ export class RolesService {
 	async findOne(id: number) {
 		const role = await this.prisma.role.findUnique({
 			where: { id },
+			include: {
+				roleActions: true,
+			},
 		});
 
 		if (!role) throw new NotFoundException();
@@ -48,14 +54,19 @@ export class RolesService {
 			where: { id },
 			data: {
 				...updateRoleData,
-				roleActions: {
-					set: actionIds?.map((actionId) => ({
-						roleId_actionId: {
-							roleId: id,
-							actionId: actionId,
+				...(actionIds && {
+					roleActions: {
+						deleteMany: {},
+						createMany: {
+							data: actionIds.map((actionId) => ({
+								actionId: actionId,
+							})),
 						},
-					})),
-				},
+					},
+				}),
+			},
+			include: {
+				roleActions: true,
 			},
 		});
 	}
@@ -65,6 +76,9 @@ export class RolesService {
 
 		return this.prisma.role.delete({
 			where: { id },
+			include: {
+				roleActions: true,
+			},
 		});
 	}
 }
