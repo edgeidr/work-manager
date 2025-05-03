@@ -4,12 +4,14 @@ import { HttpStatus } from '@nestjs/common';
 import { gte } from 'pactum-matchers';
 import { itShouldThrowIfUnauthenticated, signInAsSuperuser } from './utils/shared-auth-test';
 import { Scope } from '@prisma/client';
+import { CreateUserDto } from '../src/users/dto/create-user.dto';
+import { UpdateUserDto } from '../src/users/dto/update-user.dto';
 
 describe('Users E2E', () => {
 	beforeAll(setupApp);
 	afterAll(teardownApp);
 
-	const mockUser = {
+	const mockCreateUserData: CreateUserDto & { [key: string]: any } = {
 		email: 'test@test.com',
 		password: 'password',
 		firstName: 'Test',
@@ -25,7 +27,7 @@ describe('Users E2E', () => {
 		ignoreField: 'IGNORE', // should be ignored by DTO
 	};
 
-	const mockUpdateData = {
+	const mockUpdateUserData: UpdateUserDto & { [key: string]: any } = {
 		email: 'updated@test.com',
 		firstName: 'Updated',
 		lastName: 'Data',
@@ -53,9 +55,110 @@ describe('Users E2E', () => {
 				.get(url)
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('email')
+				.expectBodyContains('id')
 				.expectBodyContains('userRoles')
-				.expectBodyContains('userActions');
+				.expectBodyContains('userActions')
+				.expectJsonLike({
+					email: '$S{user.email}',
+					firstName: '$S{user.firstName}',
+					lastName: '$S{user.lastName}',
+				});
+		});
+	});
+
+	describe('Create user', () => {
+		const url = '/users';
+		const mockUserData = { ...mockCreateUserData };
+
+		itShouldThrowIfUnauthenticated('post', url);
+
+		it('should throw if email is empty', () => {
+			const { email, ...mockData } = mockUserData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should throw if password is empty', () => {
+			const { password, ...mockData } = mockUserData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should throw if firstName is empty', () => {
+			const { firstName, ...mockData } = mockUserData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should throw if lastName is empty', () => {
+			const { lastName, ...mockData } = mockUserData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should throw if isActive is empty', () => {
+			const { isActive, ...mockData } = mockUserData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should throw if no body is provided', () => {
+			return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should create mock user', () => {
+			const mockData = { ...mockUserData };
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.CREATED)
+				.expectBodyContains('id')
+				.expectJsonLike({
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
+					isActive: mockData.isActive,
+					...(mockData.roleIds && {
+						userRoles: mockData.roleIds.map((roleId) => ({
+							roleId,
+						})),
+					}),
+					...(mockData.userActions && {
+						userActions: mockData.userActions.map(({ actionId, scope }) => ({
+							actionId,
+							scope,
+						})),
+					}),
+				})
+				.stores('mockUserId', 'id');
 		});
 	});
 
@@ -74,95 +177,15 @@ describe('Users E2E', () => {
 		});
 	});
 
-	describe('Create user', () => {
-		const url = '/users';
-		const mockData = { ...mockUser };
-
-		itShouldThrowIfUnauthenticated('post', url);
-
-		it('should throw if email is empty', () => {
-			const { email, ...mockUserData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockUserData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should throw if password is empty', () => {
-			const { password, ...mockUserData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockUserData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should throw if firstName is empty', () => {
-			const { firstName, ...mockUserData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockUserData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should throw if lastName is empty', () => {
-			const { lastName, ...mockUserData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockUserData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should throw if isActive is empty', () => {
-			const { isActive, ...mockUserData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockUserData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should throw if no body is provided', () => {
-			return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should create mock user', () => {
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockData)
-				.expectStatus(HttpStatus.CREATED)
-				.expectJsonLike({
-					email: mockUser.email,
-					firstName: mockUser.firstName,
-					lastName: mockUser.lastName,
-					isActive: mockUser.isActive,
-				})
-				.expectBodyContains('id')
-				.stores('mockUserId', 'id');
-		});
-	});
-
 	describe('Get user by id', () => {
 		const url = '/users/{id}';
+		const mockUserData = { ...mockCreateUserData };
 
 		itShouldThrowIfUnauthenticated('get', url);
 
 		it('should get mock user', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.get(url)
@@ -170,50 +193,64 @@ describe('Users E2E', () => {
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
-					email: mockUser.email,
-					firstName: mockUser.firstName,
-					lastName: mockUser.lastName,
-					isActive: mockUser.isActive,
-					userActions: mockUser.userActions,
-					userRoles: mockUser.roleIds.map((roleId) => ({
-						roleId: roleId,
-					})),
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
+					isActive: mockData.isActive,
+					...(mockData.userActions && {
+						userActions: mockData.userActions,
+					}),
+					...(mockData.roleIds && {
+						userRoles: mockData.roleIds.map((roleId) => ({
+							roleId: roleId,
+						})),
+					}),
 				});
 		});
 	});
 
-	describe('Edit user', () => {
+	describe('Edit user by id', () => {
 		const url = '/users/{id}';
+		const mockUserData = { ...mockUpdateUserData };
 
 		itShouldThrowIfUnauthenticated('patch', url);
 
 		it('should update mock user', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.patch(url)
 				.withPathParams('id', '$S{mockUserId}')
 				.withBearerToken('$S{accessToken}')
-				.withBody(mockUpdateData)
+				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
-					email: mockUpdateData.email,
-					firstName: mockUpdateData.firstName,
-					lastName: mockUpdateData.lastName,
-					isActive: mockUpdateData.isActive,
-					userActions: mockUpdateData.userActions,
-					userRoles: mockUpdateData.roleIds.map((roleId) => ({
-						roleId: roleId,
-					})),
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
+					isActive: mockData.isActive,
+					...(mockData.userActions && {
+						userActions: mockData.userActions,
+					}),
+					...(mockData.roleIds && {
+						userRoles: mockData.roleIds.map((roleId) => ({
+							roleId: roleId,
+						})),
+					}),
 				});
 		});
 	});
 
-	describe('Delete user', () => {
+	describe('Delete user by id', () => {
 		const url = '/users/{id}';
+		const mockUserData = { ...mockUpdateUserData };
 
 		itShouldThrowIfUnauthenticated('delete', url);
 
 		it('should delete mock user', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.delete(url)
@@ -221,10 +258,19 @@ describe('Users E2E', () => {
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
-					email: mockUpdateData.email,
-					firstName: mockUpdateData.firstName,
-					lastName: mockUpdateData.lastName,
-					isActive: mockUpdateData.isActive,
+					id: '$S{mockUserId}',
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
+					isActive: mockData.isActive,
+					...(mockData.userActions && {
+						userActions: mockData.userActions,
+					}),
+					...(mockData.roleIds && {
+						userRoles: mockData.roleIds.map((roleId) => ({
+							roleId: roleId,
+						})),
+					}),
 				});
 		});
 	});
