@@ -41,6 +41,10 @@ describe('Roles E2E', () => {
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
+		it('should throw if no body is provided', () => {
+			return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
 		it('should create mock role', () => {
 			const mockData = { ...mockCreateRoleData };
 
