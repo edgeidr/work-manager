@@ -112,6 +112,10 @@ export class UsersService {
 			omit: {
 				password: true,
 			},
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
 		});
 	}
 
