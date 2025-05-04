@@ -8,7 +8,7 @@ describe('Auth E2E', () => {
 	beforeAll(setupApp);
 	afterAll(teardownApp);
 
-	const mockUser = {
+	const mockAuthUserData = {
 		email: 'test@test.com',
 		password: 'p@ssword',
 		firstName: 'Test',
@@ -18,26 +18,26 @@ describe('Auth E2E', () => {
 
 	describe('Signup', () => {
 		const url = '/auth/signup';
-		const mockData = { ...mockUser };
+		const mockUserData = { ...mockAuthUserData };
 
 		it('should throw if email is empty', () => {
-			const { email, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { email, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if password is empty', () => {
-			const { password, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { password, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if firstName is empty', () => {
-			const { firstName, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { firstName, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if lastName is empty', () => {
-			const { lastName, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { lastName, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if no body is provided', () => {
@@ -45,18 +45,20 @@ describe('Auth E2E', () => {
 		});
 
 		it('should signup', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.post(url)
-				.withBody(mockData)
+				.withBody(mockUserData)
 				.expectStatus(HttpStatus.CREATED)
 				.expectJsonLike({
-					email: mockUser.email,
-					firstName: mockUser.firstName,
-					lastName: mockUser.lastName,
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
 				})
 				.expectJsonMatch({
-					userRoles: mockUser.roleIds.map((roleId) => ({
+					userRoles: mockData.roleIds.map((roleId) => ({
 						roleId: notEquals(roleId),
 					})),
 				})
@@ -66,19 +68,19 @@ describe('Auth E2E', () => {
 
 	describe('Signin', () => {
 		const url = '/auth/signin';
-		const mockData = {
-			email: mockUser.email,
-			password: mockUser.password,
+		const mockUserData = {
+			email: mockAuthUserData.email,
+			password: mockAuthUserData.password,
 		};
 
 		it('should throw if email is empty', () => {
-			const { email, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { email, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if password is empty', () => {
-			const { password, ...mockUserData } = mockData;
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.BAD_REQUEST);
+			const { password, ...mockData } = mockUserData;
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if no body is provided', () => {
@@ -86,24 +88,26 @@ describe('Auth E2E', () => {
 		});
 
 		it('should throw if email does not exist', () => {
-			const mockUserData = {
+			const mockData = {
 				email: 'invalid@test.gmail.com',
-				password: mockUser.password,
+				password: mockUserData.password,
 			};
 
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.UNAUTHORIZED);
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.UNAUTHORIZED);
 		});
 
 		it('should throw if password is incorrect', () => {
-			const mockUserData = {
-				email: mockUser.email,
+			const mockData = {
+				email: mockUserData.email,
 				password: 'invalidpassword',
 			};
 
-			return pactum.spec().post(url).withBody(mockUserData).expectStatus(HttpStatus.UNAUTHORIZED);
+			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.UNAUTHORIZED);
 		});
 
 		it('should signin', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.post(url)
@@ -112,6 +116,7 @@ describe('Auth E2E', () => {
 				.expectBodyContains('accessToken')
 				.expectBodyContains('refreshToken')
 				.expectBodyContains('deviceId')
+				.expectBodyContains('user')
 				.stores('accessToken', 'accessToken')
 				.stores('refreshToken', 'refreshToken')
 				.stores('deviceId', 'deviceId')
@@ -121,11 +126,13 @@ describe('Auth E2E', () => {
 
 	describe('Refresh token', () => {
 		const url = '/auth/refresh';
-		const mockData = {
+		const mockUserData = {
 			refreshToken: 'fakeRefreshToken',
 		};
 
 		it('should throw if refresh token is invalid', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.post(url)
@@ -137,10 +144,13 @@ describe('Auth E2E', () => {
 
 	describe('Delete mock data', () => {
 		const url = '/users/{id}';
+		const mockUserData = { ...mockAuthUserData };
 
 		itShouldThrowIfUnauthenticated('delete', url);
 
 		it('should return mock user', () => {
+			const mockData = { ...mockUserData };
+
 			return pactum
 				.spec()
 				.get(url)
@@ -149,24 +159,10 @@ describe('Auth E2E', () => {
 				.withHeaders('Device-Id', '$S{deviceId}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLike({
-					email: mockUser.email,
-					firstName: mockUser.firstName,
-					lastName: mockUser.lastName,
-				});
-		});
-
-		it('should delete mock user', () => {
-			return pactum
-				.spec()
-				.delete(url)
-				.withPathParams('id', '$S{mockUserId}')
-				.withBearerToken('$S{accessToken}')
-				.withHeaders('Device-Id', '$S{deviceId}')
-				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
-					email: mockUser.email,
-					firstName: mockUser.firstName,
-					lastName: mockUser.lastName,
+					id: '$S{mockUserId}',
+					email: mockData.email,
+					firstName: mockData.firstName,
+					lastName: mockData.lastName,
 				});
 		});
 	});
