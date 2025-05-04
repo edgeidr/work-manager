@@ -20,6 +20,40 @@ describe('Actions E2E', () => {
 
 	signInAsSuperuser();
 
+	describe('Create action', () => {
+		const url = '/actions';
+		const mockActionData = { ...mockCreateActionData };
+
+		itShouldThrowIfUnauthenticated('post', url);
+
+		it('should throw if name is empty', () => {
+			const { name, ...mockData } = mockActionData;
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.BAD_REQUEST);
+		});
+
+		it('should create mock action', () => {
+			const mockData = { ...mockActionData };
+
+			return pactum
+				.spec()
+				.post(url)
+				.withBearerToken('$S{accessToken}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.CREATED)
+				.expectBodyContains('id')
+				.expectJsonLike({
+					name: mockData.name,
+				})
+				.stores('mockActionId', 'id');
+		});
+	});
+
 	describe('Get actions', () => {
 		const url = '/actions';
 
@@ -32,38 +66,6 @@ describe('Actions E2E', () => {
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLength('.', gte(1));
-		});
-	});
-
-	describe('Create action', () => {
-		const url = '/actions';
-		const mockData = { ...mockCreateActionData };
-
-		itShouldThrowIfUnauthenticated('post', url);
-
-		it('should throw if name is empty', () => {
-			const { name, ...mockActionData } = mockData;
-
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockActionData)
-				.expectStatus(HttpStatus.BAD_REQUEST);
-		});
-
-		it('should create mock action', () => {
-			return pactum
-				.spec()
-				.post(url)
-				.withBearerToken('$S{accessToken}')
-				.withBody(mockData)
-				.expectStatus(HttpStatus.CREATED)
-				.expectBodyContains('id')
-				.expectJsonLike({
-					name: mockData.name,
-				})
-				.stores('mockActionId', 'id');
 		});
 	});
 
@@ -80,14 +82,14 @@ describe('Actions E2E', () => {
 				.withPathParams('id', '$S{mockActionId}')
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('id')
 				.expectJsonLike({
+					id: '$S{mockActionId}',
 					name: mockData.name,
 				});
 		});
 	});
 
-	describe('Edit action', () => {
+	describe('Edit action by id', () => {
 		const url = '/actions/{id}';
 		const mockData = { ...mockUpdateActionData };
 
@@ -101,14 +103,14 @@ describe('Actions E2E', () => {
 				.withBearerToken('$S{accessToken}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('id')
 				.expectJsonLike({
+					id: '$S{mockActionId}',
 					name: mockData.name,
 				});
 		});
 	});
 
-	describe('Delete action', () => {
+	describe('Delete action by id', () => {
 		const url = '/actions/{id}';
 		const mockData = { ...mockUpdateActionData };
 
@@ -121,8 +123,8 @@ describe('Actions E2E', () => {
 				.withPathParams('id', '$S{mockActionId}')
 				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('id')
 				.expectJsonLike({
+					id: '$S{mockActionId}',
 					name: mockData.name,
 				});
 		});
