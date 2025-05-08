@@ -139,8 +139,10 @@ export class AuthService {
 		};
 	}
 
-	signOut() {
-		return 'signOut';
+	async signOut(deviceId: string) {
+		await this.prisma.session.deleteMany({
+			where: { deviceId },
+		});
 	}
 
 	async refreshToken(deviceId: string, refreshTokenDto: RefreshTokenDto) {

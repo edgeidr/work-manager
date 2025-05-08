@@ -19,10 +19,10 @@ export class AuthController {
 		return this.authService.signIn(signInDto);
 	}
 
-	@HttpCode(200)
+	@HttpCode(204)
 	@Post('signOut')
-	signOut() {
-		return this.authService.signOut();
+	signOut(@Headers('device-id') deviceId: string) {
+		return this.authService.signOut(deviceId);
 	}
 
 	@HttpCode(200)
