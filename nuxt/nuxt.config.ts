@@ -7,9 +7,17 @@ export default defineNuxtConfig({
 	css: ["@/assets/css/base.css"],
 	app: {
 		head: {
+			title: process.env.NUXT_APP_NAME,
 			htmlAttrs: {
 				class: "p-dark",
 			},
+		},
+	},
+	runtimeConfig: {
+		public: {
+			appName: process.env.NUXT_APP_NAME || "",
+			brandName: process.env.NUXT_BRAND_NAME || "",
+			proxyUrl: process.env.NUXT_PROXY_URL || "",
 		},
 	},
 	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon"],
