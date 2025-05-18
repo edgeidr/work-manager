@@ -20,7 +20,7 @@ export default defineNuxtConfig({
 			proxyUrl: process.env.NUXT_PROXY_URL || "",
 		},
 	},
-	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon"],
+	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt"],
 	primevue: {
 		importTheme: { from: "@/primevue/theme" },
 		options: {
