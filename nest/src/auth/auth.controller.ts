@@ -32,7 +32,7 @@ export class AuthController {
 		return this.authService.signUp(signUpDto);
 	}
 
-	@HttpCode(200)
+	@HttpCode(HttpStatus.OK)
 	@Post('signin')
 	async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response) {
 		const { refreshToken, accessToken, deviceId, ...authData } = await this.authService.signIn(signInDto);
@@ -44,7 +44,7 @@ export class AuthController {
 		return authData;
 	}
 
-	@HttpCode(204)
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Post('signOut')
 	signOut(@Req() request: Request) {
 		const deviceId = request.cookies['deviceId'];
