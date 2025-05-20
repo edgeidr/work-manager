@@ -12,16 +12,10 @@ async function bootstrap() {
 	const corsAllowedOrigin = configService.get<string>('CORS_ALLOWED_ORIGIN', '');
 
 	app.use(cookieParser());
-	app.enableCors({
-		origin: corsAllowedOrigin,
-		credentials: true,
-	});
-	app.useGlobalPipes(
-		new ValidationPipe({
-			whitelist: true,
-		}),
-	);
+	app.enableCors({ origin: corsAllowedOrigin, credentials: true });
+	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
 	await app.listen(port, host);
 }
+
 bootstrap();
