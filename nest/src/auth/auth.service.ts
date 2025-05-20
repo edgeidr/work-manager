@@ -133,8 +133,14 @@ export class AuthService {
 
 		return {
 			deviceId,
-			accessToken: accessToken.value,
-			refreshToken: refreshToken.value,
+			accessToken: {
+				value: accessToken.value,
+				totalDuration: accessToken.totalDuration,
+			},
+			refreshToken: {
+				value: refreshToken.value,
+				totalDuration: refreshToken.totalDuration,
+			},
 			user: userData,
 		};
 	}
@@ -145,12 +151,12 @@ export class AuthService {
 		});
 	}
 
-	async refreshToken(deviceId: string, refreshTokenDto: RefreshTokenDto) {
+	async rotateRefreshToken(deviceId: string, oldRefreshToken: string, refreshTokenDto: RefreshTokenDto) {
 		const session = await this.prisma.session.findFirst({
 			where: {
 				deviceId: deviceId,
 				refreshToken: {
-					value: refreshTokenDto.refreshToken,
+					value: oldRefreshToken,
 				},
 			},
 			include: {
@@ -161,21 +167,25 @@ export class AuthService {
 		if (!session) throw new UnauthorizedException();
 
 		const { id: userId, email } = session.user;
-		const { accessToken, refreshToken } = await this.generateTokens(userId, email, refreshTokenDto.keepMeLoggedIn);
+		const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await this.generateTokens(
+			userId,
+			email,
+			refreshTokenDto.keepMeLoggedIn,
+		);
 
 		await this.prisma.session.update({
 			where: { id: session.id },
 			data: {
 				accessToken: {
 					update: {
-						value: accessToken.value,
-						expiresAt: accessToken.expiresAt,
+						value: newAccessToken.value,
+						expiresAt: newAccessToken.expiresAt,
 					},
 				},
 				refreshToken: {
 					update: {
-						value: refreshToken.value,
-						expiresAt: refreshToken.expiresAt,
+						value: newRefreshToken.value,
+						expiresAt: newRefreshToken.expiresAt,
 					},
 				},
 			},
@@ -183,8 +193,14 @@ export class AuthService {
 
 		return {
 			deviceId,
-			accessToken: accessToken.value,
-			refreshToken: refreshToken.value,
+			accessToken: {
+				value: newAccessToken.value,
+				totalDuration: newAccessToken.totalDuration,
+			},
+			refreshToken: {
+				value: newRefreshToken.value,
+				totalDuration: newRefreshToken.totalDuration,
+			},
 		};
 	}
 
@@ -194,15 +210,17 @@ export class AuthService {
 		keepMeLoggedIn: boolean,
 	): Promise<{
 		deviceId: string;
-		accessToken: { value: string; expiresAt: Date };
-		refreshToken: { value: string; expiresAt: Date };
+		accessToken: { value: string; expiresAt: Date; totalDuration: number };
+		refreshToken: { value: string; expiresAt: Date; totalDuration: number };
 	}> {
 		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
 		const refreshTokenDuration = keepMeLoggedIn
 			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
 			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
-		const accessTokenExpiration = new Date(Date.now() + accessTokenDuration * 1000 * 60);
-		const refreshTokenExpiration = new Date(Date.now() + refreshTokenDuration * 1000 * 60);
+		const accessTokenTotalDuration = accessTokenDuration * 1000 * 60;
+		const refreshTokenTotalDuration = refreshTokenDuration * 1000 * 60;
+		const accessTokenExpiration = new Date(Date.now() + accessTokenTotalDuration);
+		const refreshTokenExpiration = new Date(Date.now() + refreshTokenTotalDuration);
 		const deviceId = randomUUID();
 
 		const payload = {
@@ -224,10 +242,12 @@ export class AuthService {
 			accessToken: {
 				value: accessToken,
 				expiresAt: accessTokenExpiration,
+				totalDuration: accessTokenTotalDuration,
 			},
 			refreshToken: {
 				value: refreshToken,
 				expiresAt: refreshTokenExpiration,
+				totalDuration: refreshTokenTotalDuration,
 			},
 		};
 	}
