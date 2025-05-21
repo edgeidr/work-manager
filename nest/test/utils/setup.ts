@@ -3,6 +3,7 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
 import * as pactum from 'pactum';
+import * as cookieParser from 'cookie-parser';
 
 let app: INestApplication;
 let prisma: PrismaService;
@@ -13,6 +14,7 @@ export const setupApp = async () => {
 	}).compile();
 
 	app = moduleRef.createNestApplication();
+	app.use(cookieParser());
 	app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
 	await app.init();

@@ -32,7 +32,7 @@ describe('Actions E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
@@ -43,11 +43,11 @@ describe('Actions E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.CREATED)
 				.expectBodyContains('id')
-				.expectJsonLike({
+				.expectJsonMatch({
 					name: mockData.name,
 				})
 				.stores('mockActionId', 'id');
@@ -63,7 +63,7 @@ describe('Actions E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLength('.', gte(1));
 		});
@@ -80,9 +80,9 @@ describe('Actions E2E', () => {
 				.spec()
 				.get(url)
 				.withPathParams('id', '$S{mockActionId}')
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockActionId}',
 					name: mockData.name,
 				});
@@ -100,10 +100,10 @@ describe('Actions E2E', () => {
 				.spec()
 				.patch(url)
 				.withPathParams('id', '$S{mockActionId}')
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockActionId}',
 					name: mockData.name,
 				});
@@ -120,10 +120,10 @@ describe('Actions E2E', () => {
 			return pactum
 				.spec()
 				.delete(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockActionId}')
-				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockActionId}',
 					name: mockData.name,
 				});

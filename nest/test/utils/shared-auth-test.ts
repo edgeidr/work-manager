@@ -23,13 +23,8 @@ const signInAsSuperuser = () => {
 				.post(url)
 				.withBody(superadminCredentials)
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('accessToken')
-				.expectBodyContains('refreshToken')
-				.expectBodyContains('deviceId')
 				.expectBodyContains('user')
-				.stores('accessToken', 'accessToken')
-				.stores('refreshToken', 'refreshToken')
-				.stores('deviceId', 'deviceId')
+				.stores('cookies', 'res.headers.set-cookie')
 				.stores('user', 'user');
 		});
 	});
