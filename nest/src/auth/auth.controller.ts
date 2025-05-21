@@ -20,7 +20,7 @@ export class AuthController {
 
 		return {
 			httpOnly: true,
-			sameSite: 'strict',
+			sameSite: 'lax',
 			secure: useSecure,
 			domain: baseDomain,
 			maxAge,
