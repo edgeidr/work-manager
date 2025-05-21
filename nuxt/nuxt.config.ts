@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
 	devServer: {
-		host: "work-manager.edge.local",
+		host: "work-manager.edgeidr.local",
 		port: 3000,
 	},
 	ssr: false,

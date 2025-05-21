@@ -16,7 +16,7 @@ export class AuthController {
 	private getCookieOptions(maxAge: number): CookieOptions {
 		const secureEnvironments = ['production', 'staging'];
 		const useSecure = secureEnvironments.includes(this.configService.get('NODE_ENV', 'development'));
-		const baseDomain = this.configService.get('COOKIE_DOMAIN', 'edge.local');
+		const baseDomain = this.configService.get('COOKIE_DOMAIN', '');
 
 		return {
 			httpOnly: true,
