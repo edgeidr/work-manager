@@ -19,7 +19,7 @@
 		"db:test:up": "docker compose up test-db -d",
 		"db:test:restart": "npm run db:test:rm && npm run db:test:up && sleep 1 && npm run prisma:test:deploy && npm run db:test:seed",
 		"db:test:seed": "dotenv -e .env.test.local -- ts-node prisma/seed.ts",
-		"build": "npx prisma generate && npx prisma migrate deploy && npx prisma db seed && nest build",
+		"build": "npx prisma generate && npx prisma migrate deploy && nest build",
 		"format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
 		"start": "nest start",
 		"start:dev": "nest start --watch",
