@@ -3,6 +3,10 @@
 export default defineNuxtConfig({
 	compatibilityDate: "2024-11-01",
 	devtools: { enabled: true },
+	devServer: {
+		host: "work-manager.edge.local",
+		port: 3000,
+	},
 	ssr: false,
 	css: ["@/assets/css/base.css"],
 	app: {
@@ -17,7 +21,7 @@ export default defineNuxtConfig({
 		public: {
 			appName: process.env.NUXT_APP_NAME || "",
 			brandName: process.env.NUXT_BRAND_NAME || "",
-			proxyUrl: process.env.NUXT_PROXY_URL || "",
+			apiBaseUrl: process.env.NUXT_API_BASE_URL || "",
 		},
 	},
 	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt"],
