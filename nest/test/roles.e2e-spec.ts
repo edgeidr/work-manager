@@ -36,13 +36,13 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if no body is provided', () => {
-			return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(HttpStatus.BAD_REQUEST);
+			return pactum.spec().post(url).withCookies('$S{cookies}').expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should create mock role', () => {
@@ -51,11 +51,11 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.CREATED)
 				.expectBodyContains('id')
-				.expectJsonLike({
+				.expectJsonMatch({
 					name: mockData.name,
 					...(mockData.actionIds && {
 						roleActions: mockData.actionIds?.map((actionId) => ({
@@ -76,7 +76,7 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLength('.', gte(1));
 		});
@@ -92,10 +92,10 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockRoleId}')
-				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockRoleId}',
 					name: mockData.name,
 					...(mockData.actionIds && {
@@ -117,11 +117,11 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.patch(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockRoleId}')
-				.withBearerToken('$S{accessToken}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockRoleId}',
 					name: mockData.name,
 					...(mockData.actionIds && {
@@ -143,10 +143,10 @@ describe('Roles E2E', () => {
 			return pactum
 				.spec()
 				.delete(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockRoleId}')
-				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockRoleId}',
 					name: mockData.name,
 					...(mockData.actionIds && {

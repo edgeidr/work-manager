@@ -1,8 +1,9 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { Request } from 'express';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -11,20 +12,20 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		private prisma: PrismaService,
 	) {
 		super({
-			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+			jwtFromRequest: (req: Request) => req.cookies['accessToken'] || null,
 			secretOrKey: config.get('JWT_ACCESS_TOKEN_SECRET', ''),
 			passReqToCallback: true,
 		});
 	}
 
 	async validate(request: Request, payload: { sub: number; email: string }) {
-		const deviceId = request.headers['device-id'] as string;
-		const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(request) as string;
+		const deviceId = request.cookies['deviceId'];
+		const accessToken = request.cookies['accessToken'];
 
 		const session = await this.prisma.session.findFirst({
 			where: {
 				userId: payload.sub,
-				deviceId: deviceId,
+				deviceId,
 				accessToken: {
 					value: accessToken,
 				},

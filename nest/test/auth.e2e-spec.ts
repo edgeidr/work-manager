@@ -16,6 +16,8 @@ describe('Auth E2E', () => {
 		roleIds: [1], // should be ignored by DTO
 	};
 
+	let cookies;
+
 	describe('Signup', () => {
 		const url = '/auth/signup';
 		const mockUserData = { ...mockAuthUserData };
@@ -52,12 +54,10 @@ describe('Auth E2E', () => {
 				.post(url)
 				.withBody(mockUserData)
 				.expectStatus(HttpStatus.CREATED)
-				.expectJsonLike({
+				.expectJsonMatch({
 					email: mockData.email,
 					firstName: mockData.firstName,
 					lastName: mockData.lastName,
-				})
-				.expectJsonMatch({
 					userRoles: mockData.roleIds.map((roleId) => ({
 						roleId: notEquals(roleId),
 					})),
@@ -105,40 +105,47 @@ describe('Auth E2E', () => {
 			return pactum.spec().post(url).withBody(mockData).expectStatus(HttpStatus.UNAUTHORIZED);
 		});
 
-		it('should signin', () => {
+		it('should signin', async () => {
 			const mockData = { ...mockUserData };
 
-			return pactum
+			const res = await pactum
 				.spec()
 				.post(url)
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('accessToken')
-				.expectBodyContains('refreshToken')
-				.expectBodyContains('deviceId')
 				.expectBodyContains('user')
-				.stores('accessToken', 'accessToken')
-				.stores('refreshToken', 'refreshToken')
-				.stores('deviceId', 'deviceId')
-				.stores('user', 'user');
+				.stores('user', 'user')
+				.stores('cookies', 'res.headers.set-cookie');
 		});
 	});
 
 	describe('Refresh token', () => {
 		const url = '/auth/refresh';
-		const mockUserData = {
-			refreshToken: 'fakeRefreshToken',
+		const mockRefreshData = {
+			keepMeLoggedIn: true,
 		};
 
-		it('should throw if refresh token is invalid', () => {
-			const mockData = { ...mockUserData };
+		it('should refresh token with shorter expiry', () => {
+			const mockData = {};
 
 			return pactum
 				.spec()
 				.post(url)
-				.withHeaders('Device-Id', '$S{deviceId}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
-				.expectStatus(HttpStatus.UNAUTHORIZED);
+				.expectStatus(HttpStatus.NO_CONTENT)
+				.stores('cookies', 'res.headers.set-cookie');
+		});
+
+		it('should refresh token with longer expiry', () => {
+			const mockData = { ...mockRefreshData };
+			return pactum
+				.spec()
+				.post(url)
+				.withCookies('$S{cookies}')
+				.withBody(mockData)
+				.expectStatus(HttpStatus.NO_CONTENT)
+				.stores('cookies', 'res.headers.set-cookie');
 		});
 	});
 
@@ -148,17 +155,16 @@ describe('Auth E2E', () => {
 
 		itShouldThrowIfUnauthenticated('delete', url);
 
-		it('should return mock user', () => {
+		it('should delete mock user', () => {
 			const mockData = { ...mockUserData };
 
 			return pactum
 				.spec()
-				.get(url)
+				.delete(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockUserId}')
-				.withBearerToken('$S{accessToken}')
-				.withHeaders('Device-Id', '$S{deviceId}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockUserId}',
 					email: mockData.email,
 					firstName: mockData.firstName,

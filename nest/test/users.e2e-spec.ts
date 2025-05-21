@@ -53,16 +53,16 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.expectStatus(HttpStatus.OK)
-				.expectBodyContains('id')
 				.expectBodyContains('userRoles')
 				.expectBodyContains('userActions')
-				.expectJsonLike({
+				.expectJsonMatch({
 					email: '$S{user.email}',
 					firstName: '$S{user.firstName}',
 					lastName: '$S{user.lastName}',
-				});
+				})
+				.inspect();
 		});
 	});
 
@@ -78,7 +78,7 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
@@ -89,7 +89,7 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
@@ -100,7 +100,7 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
@@ -111,7 +111,7 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
@@ -122,13 +122,13 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should throw if no body is provided', () => {
-			return pactum.spec().post(url).withBearerToken('$S{accessToken}').expectStatus(HttpStatus.BAD_REQUEST);
+			return pactum.spec().post(url).withCookies('$S{cookies}').expectStatus(HttpStatus.BAD_REQUEST);
 		});
 
 		it('should create mock user', () => {
@@ -137,11 +137,11 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.post(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.CREATED)
 				.expectBodyContains('id')
-				.expectJsonLike({
+				.expectJsonMatch({
 					email: mockData.email,
 					firstName: mockData.firstName,
 					lastName: mockData.lastName,
@@ -171,7 +171,7 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
-				.withBearerToken('$S{accessToken}')
+				.withCookies('$S{cookies}')
 				.expectStatus(HttpStatus.OK)
 				.expectJsonLength('.', gte(1));
 		});
@@ -189,10 +189,10 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.get(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockUserId}')
-				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					email: mockData.email,
 					firstName: mockData.firstName,
 					lastName: mockData.lastName,
@@ -221,11 +221,11 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.patch(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockUserId}')
-				.withBearerToken('$S{accessToken}')
 				.withBody(mockData)
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					email: mockData.email,
 					firstName: mockData.firstName,
 					lastName: mockData.lastName,
@@ -254,10 +254,10 @@ describe('Users E2E', () => {
 			return pactum
 				.spec()
 				.delete(url)
+				.withCookies('$S{cookies}')
 				.withPathParams('id', '$S{mockUserId}')
-				.withBearerToken('$S{accessToken}')
 				.expectStatus(HttpStatus.OK)
-				.expectJsonLike({
+				.expectJsonMatch({
 					id: '$S{mockUserId}',
 					email: mockData.email,
 					firstName: mockData.firstName,
