@@ -2,41 +2,41 @@
 	<div class="flex h-full items-center justify-center">
 		<div>
 			<div class="mb-8">
-				<h1 class="text-2xl font-semibold text-primary">Welcome Back!</h1>
-				<p class="text-muted-color">Please enter your details here.</p>
+				<h1 class="text-2xl font-semibold text-primary">{{ $t("auth.title") }}</h1>
+				<p class="text-muted-color">{{ $t("auth.subtitle") }}</p>
 			</div>
 
 			<form v-focustrap @submit.prevent="onSubmit">
 				<div class="space-y-4">
 					<div>
 						<label>Username</label>
-						<InputText v-model="form.email" class="mt-1" fluid />
+						<InputText type="email" v-model="form.email" class="mt-1" required fluid />
 					</div>
 
 					<div>
 						<label>Password</label>
-						<Password v-model="form.password" :feedback="false" class="mt-1" fluid />
+						<Password v-model="form.password" :feedback="false" class="mt-1" required fluid />
 
 						<div class="my-2.5 text-right">
-							<Button label="Forgot Password?" variant="link" class="!p-0" size="small" />
+							<Button :label="$t('auth.buttons.forgotPassword')" variant="link" class="!p-0" size="small" />
 						</div>
 					</div>
 
-					<Button type="submit" label="Sign In" fluid />
+					<Button type="submit" :label="$t('auth.buttons.signIn')" fluid />
 
 					<div class="flex items-center">
 						<div class="h-px flex-1 border border-surface-500"></div>
-						<span class="px-2 text-sm text-muted-color">or continue with</span>
+						<span class="px-2 text-sm text-muted-color">{{ $t("auth.buttons.continueWith") }}</span>
 						<div class="h-px flex-1 border border-surface-500"></div>
 					</div>
 
 					<div class="flex gap-4">
-						<Button label="Google" variant="outlined" severity="secondary" fluid>
+						<Button :label="$t('auth.buttons.google')" variant="outlined" severity="secondary" fluid>
 							<template #icon>
 								<Icon name="logos:google-icon" />
 							</template>
 						</Button>
-						<Button label="GitHub" variant="outlined" severity="secondary" fluid>
+						<Button :label="$t('auth.buttons.github')" variant="outlined" severity="secondary" fluid>
 							<template #icon>
 								<Icon name="logos:github-icon" />
 							</template>
@@ -44,9 +44,9 @@
 					</div>
 				</div>
 
-				<div class="mt-8 text-center">
-					<span class="text-sm">Don't have an account? </span>
-					<Button label="Sign Up" variant="link" class="!p-0" size="small" />
+				<div class="mt-8 space-x-1 text-center">
+					<span class="text-sm">{{ $t("auth.buttons.signUpPrompt") }}</span>
+					<Button :label="$t('auth.buttons.signUp')" variant="link" class="!p-0" size="small" />
 				</div>
 			</form>
 		</div>

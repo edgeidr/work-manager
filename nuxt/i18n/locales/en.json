@@ -1,0 +1,19 @@
+{
+	"auth": {
+		"title": "Welcome Back!",
+		"subtitle": "Please enter your details here",
+		"labels": {
+			"email": "Email",
+			"password": "Password"
+		},
+		"buttons": {
+			"forgotPassword": "Forgot Password?",
+			"signIn": "Sign In",
+			"continueWith": "or continue with",
+			"google": "Google",
+			"github": "GitHub",
+			"signUpPrompt": "Don't have an account?",
+			"signUp": "Sign Up"
+		}
+	}
+}

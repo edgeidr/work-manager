@@ -24,7 +24,7 @@ export default defineNuxtConfig({
 			apiBaseUrl: process.env.NUXT_API_BASE_URL || "",
 		},
 	},
-	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt"],
+	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt", "@nuxtjs/i18n"],
 	primevue: {
 		importTheme: { from: "@/primevue/theme" },
 		options: {
@@ -37,5 +37,9 @@ export default defineNuxtConfig({
 	},
 	fonts: {
 		families: [{ name: "Inter" }],
+	},
+	i18n: {
+		locales: [{ code: "en", language: "en-US", file: "en.json" }],
+		defaultLocale: "en",
 	},
 });
