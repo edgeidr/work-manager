@@ -1,6 +1,6 @@
 <template>
 	<div class="flex h-full items-center justify-center">
-		<div>
+		<div class="w-full">
 			<div class="mb-8">
 				<h1 class="text-2xl font-semibold text-primary">{{ $t("auth.title") }}</h1>
 				<p class="text-muted-color">{{ $t("auth.subtitle") }}</p>
@@ -9,20 +9,22 @@
 			<form v-focustrap @submit.prevent="onSubmit">
 				<div class="space-y-4">
 					<div>
-						<label>Username</label>
-						<InputText type="email" v-model="form.email" class="mt-1" required fluid />
+						<label>Email</label>
+						<InputText type="email" v-model="form.email" :invalid="hasError('email')" class="mt-1" fluid />
+						<FieldErrors field="email" :formErrors />
 					</div>
 
 					<div>
 						<label>Password</label>
-						<Password v-model="form.password" :feedback="false" class="mt-1" required fluid />
+						<Password v-model="form.password" :invalid="hasError('password')" :feedback="false" class="mt-1" fluid />
+						<FieldErrors field="password" :formErrors />
 
 						<div class="my-2.5 text-right">
 							<Button :label="$t('auth.buttons.forgotPassword')" variant="link" class="!p-0" size="small" />
 						</div>
 					</div>
 
-					<Button type="submit" :label="$t('auth.buttons.signIn')" fluid />
+					<Button type="submit" :label="$t('auth.buttons.signIn')" :loading="signInStatus === 'pending'" fluid />
 
 					<div class="flex items-center">
 						<div class="h-px flex-1 border border-surface-500"></div>
@@ -57,26 +59,39 @@
 	definePageMeta({ layout: "auth" });
 
 	const user = useLocalStorage<User>("user", null);
+	const formErrors = ref<FormError[]>([]);
+	const { hasError, clearAllErrors } = useFormErrors(formErrors);
 	const form = ref({
 		email: "",
 		password: "",
 	});
 
-	const { execute: signIn, data: auth } = await useCustomFetch<User>("/auth/signin", {
+	const {
+		execute: signIn,
+		data: auth,
+		status: signInStatus,
+	} = await useCustomFetch<User>("/auth/signin", {
 		immediate: false,
 		watch: false,
 		method: "POST",
 		body: form,
-	});
+		onResponse: async ({ response }) => {
+			if (!response.ok) return;
 
-	const { execute: getMe, data } = await useCustomFetch("/users/me", {
-		immediate: false,
-		watch: false,
+			user.value = auth.value;
+			navigateTo("/");
+		},
+		onResponseError: ({ response }) => {
+			const { message } = response._data;
+
+			if (message && Array.isArray(message)) {
+				formErrors.value = message;
+			}
+		},
 	});
 
 	const onSubmit = async () => {
+		clearAllErrors();
 		await signIn();
-		user.value = auth.value;
-		await getMe();
 	};
 </script>
