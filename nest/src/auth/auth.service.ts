@@ -79,12 +79,12 @@ export class AuthService {
 			},
 		});
 
-		if (!user) throw new UnauthorizedException('Account does not exist!');
+		if (!user) throw new UnauthorizedException('messages.invalidCredentials');
 
 		const { password, ...userData } = user;
 		const passwordMatches = await verify(password, signInDto.password);
 
-		if (!passwordMatches) throw new UnauthorizedException('Account does not exist');
+		if (!passwordMatches) throw new UnauthorizedException('messages.invalidCredentials');
 
 		const { deviceId, accessToken, refreshToken } = await this.generateTokens(
 			user.id,
