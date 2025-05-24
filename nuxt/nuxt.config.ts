@@ -22,6 +22,7 @@ export default defineNuxtConfig({
 			appName: process.env.NUXT_APP_NAME || "",
 			brandName: process.env.NUXT_BRAND_NAME || "",
 			apiBaseUrl: process.env.NUXT_API_BASE_URL || "",
+			toastLife: Number(process.env.NUXT_TOAST_LIFE) || 5000,
 		},
 	},
 	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt", "@nuxtjs/i18n"],
@@ -41,5 +42,6 @@ export default defineNuxtConfig({
 	i18n: {
 		locales: [{ code: "en", language: "en-US", file: "en.json" }],
 		defaultLocale: "en",
+		strategy: "no_prefix",
 	},
 });
