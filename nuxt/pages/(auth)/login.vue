@@ -10,7 +10,7 @@
 				<div class="space-y-4">
 					<div>
 						<label>Email</label>
-						<InputText type="email" v-model="form.email" :invalid="hasError('email')" class="mt-1" fluid />
+						<InputText v-model="form.email" :invalid="hasError('email')" class="mt-1" inputmode="email" fluid />
 						<FieldErrors field="email" :formErrors />
 					</div>
 
@@ -66,11 +66,7 @@
 		password: "",
 	});
 
-	const {
-		execute: signIn,
-		data: auth,
-		status: signInStatus,
-	} = await useCustomFetch<User>("/auth/signin", {
+	const { execute: signIn, status: signInStatus } = await useCustomFetch("/auth/signin", {
 		immediate: false,
 		watch: false,
 		method: "POST",
@@ -78,8 +74,10 @@
 		onResponse: async ({ response }) => {
 			if (!response.ok) return;
 
-			user.value = auth.value;
-			navigateTo("/");
+			const { user: userData } = response._data as { user: User };
+
+			user.value = userData;
+			navigateTo({ name: "index" });
 		},
 		onResponseError: ({ response }) => {
 			const { message } = response._data;
@@ -90,8 +88,8 @@
 		},
 	});
 
-	const onSubmit = async () => {
+	const onSubmit = () => {
 		clearAllErrors();
-		await signIn();
+		signIn();
 	};
 </script>
