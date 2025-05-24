@@ -1,4 +1,20 @@
 {
+	"messages": {
+		"invalidCredentials": "Incorrect Email or Password",
+		"tryAgainLater": "Something went wrong. Try again later.",
+		"reviewAll": "Please review all errors"
+	},
+	"validation": {
+		"required": "Must not be empty",
+		"invalidEmail": "Must be a valid email address",
+		"invalidType": "Must be a valid value",
+		"invalidOption": "Must be a valid option"
+	},
+	"httpStatus": {
+		"400": "Bad Request",
+		"401": "Unauthorized",
+		"unexpected": "Unexpected Error"
+	},
 	"auth": {
 		"title": "Welcome Back!",
 		"subtitle": "Please enter your details here",
