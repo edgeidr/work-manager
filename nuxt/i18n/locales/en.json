@@ -20,7 +20,8 @@
 		"subtitle": "Please enter your details here",
 		"labels": {
 			"email": "Email",
-			"password": "Password"
+			"password": "Password",
+			"staySignedIn": "Stay signed in"
 		},
 		"buttons": {
 			"forgotPassword": "Forgot Password?",

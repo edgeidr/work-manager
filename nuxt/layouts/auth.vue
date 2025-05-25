@@ -1,11 +1,9 @@
 <template>
-	<div class="flex h-screen w-screen gap-8 p-8">
-		<div class="flex-1 overflow-hidden rounded-lg bg-surface-400">
-			<img src="~/assets/images/login-banner.jpg" class="size-full object-cover" />
-		</div>
-
-		<div class="min-h-96 w-96 rounded-lg bg-surface-800 p-8 text-surface-0">
-			<slot />
+	<div class="h-screen w-screen bg-surface-400 bg-[url('/assets/images/login-banner.jpg')] bg-cover bg-center">
+		<div class="flex size-full items-center justify-center sm:justify-end">
+			<div class="m-8 h-fit rounded-lg bg-surface-800/60 px-8 py-14 shadow-lg backdrop-blur-lg">
+				<slot />
+			</div>
 		</div>
 	</div>
 </template>
