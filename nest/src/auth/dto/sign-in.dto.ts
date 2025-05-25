@@ -11,5 +11,5 @@ export class SignInDto {
 
 	@IsOptional()
 	@IsBoolean({ message: 'validation.invalidType' })
-	keepMeLoggedIn: boolean = false;
+	staySignedIn: boolean = false;
 }

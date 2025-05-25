@@ -122,7 +122,7 @@ describe('Auth E2E', () => {
 	describe('Refresh token', () => {
 		const url = '/auth/refresh';
 		const mockRefreshData = {
-			keepMeLoggedIn: true,
+			staySignedIn: true,
 		};
 
 		it('should refresh token with shorter expiry', () => {

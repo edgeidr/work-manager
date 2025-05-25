@@ -89,7 +89,7 @@ export class AuthService {
 		const { deviceId, accessToken, refreshToken } = await this.generateTokens(
 			user.id,
 			user.email,
-			signInDto.keepMeLoggedIn,
+			signInDto.staySignedIn,
 		);
 
 		await this.prisma.session.upsert({
@@ -170,7 +170,7 @@ export class AuthService {
 		const { accessToken: newAccessToken, refreshToken: newRefreshToken } = await this.generateTokens(
 			userId,
 			email,
-			refreshTokenDto.keepMeLoggedIn,
+			refreshTokenDto.staySignedIn,
 		);
 
 		await this.prisma.session.update({
@@ -207,14 +207,14 @@ export class AuthService {
 	async generateTokens(
 		userId: number,
 		email: string,
-		keepMeLoggedIn: boolean,
+		staySignedIn: boolean,
 	): Promise<{
 		deviceId: string;
 		accessToken: { value: string; expiresAt: Date; totalDuration: number };
 		refreshToken: { value: string; expiresAt: Date; totalDuration: number };
 	}> {
 		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
-		const refreshTokenDuration = keepMeLoggedIn
+		const refreshTokenDuration = staySignedIn
 			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
 			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
 		const accessTokenTotalDuration = accessTokenDuration * 1000 * 60;
