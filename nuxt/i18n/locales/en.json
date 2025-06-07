@@ -16,21 +16,59 @@
 		"unexpected": "Unexpected Error"
 	},
 	"auth": {
-		"title": "Welcome Back!",
-		"subtitle": "Please enter your details here",
-		"labels": {
-			"email": "Email",
-			"password": "Password",
-			"staySignedIn": "Stay signed in"
+		"login": {
+			"title": "Welcome Back!",
+			"subtitle": "Please enter your details here",
+			"labels": {
+				"email": "Email",
+				"password": "Password",
+				"staySignedIn": "Stay signed in"
+			},
+			"buttons": {
+				"forgotPassword": "Forgot Password?",
+				"signIn": "Sign In",
+				"continueWith": "or continue with",
+				"google": "Google",
+				"github": "GitHub",
+				"signUpPrompt": "Don't have an account?",
+				"signUp": "Sign Up"
+			}
 		},
-		"buttons": {
-			"forgotPassword": "Forgot Password?",
-			"signIn": "Sign In",
-			"continueWith": "or continue with",
-			"google": "Google",
-			"github": "GitHub",
-			"signUpPrompt": "Don't have an account?",
-			"signUp": "Sign Up"
+		"forgotPassword": {
+			"title": "Forgot Password?",
+			"subtitle": "We’ll help you get back in",
+			"labels": {
+				"email": "Email"
+			},
+			"buttons": {
+				"submit": "Send Code",
+				"back": "Back to Login"
+			}
+		},
+		"verifyCode": {
+			"title": "Enter OTP",
+			"subtitle": "We've sent a code to your email",
+			"labels": {
+				"helper": "Didn't receive it?",
+				"codeExpired": "Code expired",
+				"codeExpiresIn": "Expires in "
+			},
+			"buttons": {
+				"submit": "Resend Code",
+				"back": "Back to Login"
+			}
+		},
+		"resetPassword": {
+			"title": "Set New Password",
+			"subtitle": "Let’s finish resetting your login credentials",
+			"labels": {
+				"password": "New password",
+				"confirmPassword": "Confirm new password"
+			},
+			"buttons": {
+				"submit": "Reset Password",
+				"back": "Back to Login"
+			}
 		}
 	}
 }

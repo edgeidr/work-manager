@@ -1,19 +1,19 @@
 <template>
 	<div class="mb-8">
-		<h1 class="text-2xl font-semibold text-color">{{ $t("auth.title") }}</h1>
-		<p class="text-muted-color">{{ $t("auth.subtitle") }}</p>
+		<h1 class="text-2xl font-semibold text-color">{{ $t("auth.login.title") }}</h1>
+		<p class="text-muted-color">{{ $t("auth.login.subtitle") }}</p>
 	</div>
 
-	<form v-focustrap @submit.prevent="onSubmit">
+	<form @submit.prevent="onSubmit">
 		<div class="space-y-4">
 			<div>
-				<label>Email</label>
+				<label>{{ $t("auth.login.labels.email") }}</label>
 				<InputText v-model="form.email" :invalid="hasError('email')" class="mt-1" inputmode="email" fluid />
 				<FieldErrors field="email" :formErrors />
 			</div>
 
 			<div>
-				<label>Password</label>
+				<label>{{ $t("auth.login.labels.password") }}</label>
 				<Password v-model="form.password" :invalid="hasError('password')" :feedback="false" class="mt-1" fluid />
 				<FieldErrors field="password" :formErrors />
 			</div>
@@ -21,30 +21,35 @@
 			<div class="flex items-center justify-between gap-4 whitespace-nowrap">
 				<div class="flex items-center gap-2">
 					<Checkbox v-model="form.staySignedIn" inputId="staySignedIn" size="small" binary />
-					<label for="staySignedIn" class="text-sm">{{ $t("auth.labels.staySignedIn") }}</label>
+					<label for="staySignedIn" class="text-sm">{{ $t("auth.login.labels.staySignedIn") }}</label>
 				</div>
 
-				<Button @click="navigateTo({ name: 'forgot-password' })" :label="$t('auth.buttons.forgotPassword')" variant="link" class="!p-0" size="small" />
+				<Button
+					@click="navigateTo({ name: 'forgot-password' })"
+					:label="$t('auth.login.buttons.forgotPassword')"
+					variant="link"
+					class="!p-0"
+					size="small" />
 			</div>
 
-			<Button type="submit" :label="$t('auth.buttons.signIn')" :loading="signInStatus === 'pending'" fluid />
+			<Button type="submit" :label="$t('auth.login.buttons.signIn')" :loading="signInStatus === 'pending'" fluid />
 		</div>
 	</form>
 
 	<div class="mt-4 space-y-4">
 		<div class="flex items-center">
 			<div class="h-px flex-1 border border-surface-500"></div>
-			<span class="px-2 text-sm text-muted-color">{{ $t("auth.buttons.continueWith") }}</span>
+			<span class="px-2 text-sm text-muted-color">{{ $t("auth.login.buttons.continueWith") }}</span>
 			<div class="h-px flex-1 border border-surface-500"></div>
 		</div>
 
 		<div class="flex gap-4">
-			<Button :label="$t('auth.buttons.google')" severity="contrast" variant="outlined" fluid>
+			<Button :label="$t('auth.login.buttons.google')" severity="contrast" variant="outlined" fluid>
 				<template #icon>
 					<Icon name="logos:google-icon" />
 				</template>
 			</Button>
-			<Button :label="$t('auth.buttons.github')" severity="contrast" variant="outlined" fluid>
+			<Button :label="$t('auth.login.buttons.github')" severity="contrast" variant="outlined" fluid>
 				<template #icon>
 					<Icon name="logos:github-icon" />
 				</template>
@@ -52,8 +57,8 @@
 		</div>
 
 		<div class="space-x-1 text-center">
-			<span class="text-sm">{{ $t("auth.buttons.signUpPrompt") }}</span>
-			<Button :label="$t('auth.buttons.signUp')" variant="link" class="!p-0" size="small" />
+			<span class="text-sm">{{ $t("auth.login.buttons.signUpPrompt") }}</span>
+			<Button :label="$t('auth.login.buttons.signUp')" variant="link" class="!p-0" size="small" />
 		</div>
 	</div>
 </template>
