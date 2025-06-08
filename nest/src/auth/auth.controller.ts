@@ -5,12 +5,16 @@ import { SignInDto } from './dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { OtpsService } from '../otps/otps.service';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private configService: ConfigService,
+		private otpsService: OtpsService,
 	) {}
 
 	private getCookieOptions(maxAge: number): CookieOptions {
@@ -68,5 +72,16 @@ export class AuthController {
 		response.cookie('refreshToken', newRefreshToken.value, this.getCookieOptions(newRefreshToken.totalDuration));
 
 		return;
+	}
+
+	@Post('forgot-password')
+	forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+		return this.otpsService.sendOtp(forgotPasswordDto.email, 'FORGOT_PASSWORD');
+	}
+
+	@Post('reset-password')
+	resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+		const { newPassword, token } = resetPasswordDto;
+		return this.authService.resetPassword(newPassword, token);
 	}
 }

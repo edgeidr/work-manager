@@ -1,8 +1,11 @@
 {
 	"messages": {
 		"invalidCredentials": "Incorrect Email or Password",
-		"tryAgainLater": "Something went wrong. Try again later.",
-		"reviewAll": "Please review all errors"
+		"tryAgain": "Something went wrong. Try again later.",
+		"reviewAll": "Please review all errors",
+		"emailNotFound": "Email not found",
+		"invalidOtp": "Invalid OTP",
+		"maxOtpAttempts": "Max OTP attempts reached"
 	},
 	"validation": {
 		"required": "Must not be empty",

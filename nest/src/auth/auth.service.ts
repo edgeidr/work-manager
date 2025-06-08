@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { hash, verify } from 'argon2';
 import { SignInDto } from './dto/sign-in.dto';
@@ -149,6 +149,31 @@ export class AuthService {
 		await this.prisma.session.deleteMany({
 			where: { deviceId },
 		});
+	}
+
+	async resetPassword(newPassword: string, token: string) {
+		const passwordResetToken = await this.prisma.passwordResetToken.findUnique({
+			where: {
+				value: token,
+				used: false,
+				expiresAt: { gt: new Date() },
+			},
+			select: { userId: true },
+		});
+
+		if (!passwordResetToken) throw new BadRequestException('messages.tryAgain');
+
+		await this.prisma.user.update({
+			where: { id: passwordResetToken.userId },
+			data: { password: newPassword },
+			omit: { password: true },
+		});
+
+		await this.prisma.passwordResetToken.deleteMany({
+			where: { userId: passwordResetToken.userId },
+		});
+
+		return true;
 	}
 
 	async rotateRefreshToken(deviceId: string, oldRefreshToken: string, refreshTokenDto: RefreshTokenDto) {

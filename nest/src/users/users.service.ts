@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hash } from 'argon2';
 import { User } from '@prisma/client';
+import { UserWithoutPassword } from '../common/types/user.type';
 
 @Injectable()
 export class UsersService {
@@ -120,6 +121,22 @@ export class UsersService {
 	}
 
 	async getMe(user: User) {
+		return user;
+	}
+
+	async findOneByEmail(email: string): Promise<UserWithoutPassword> {
+		const user = await this.prisma.user.findUnique({
+			where: {
+				email,
+				isActive: true,
+			},
+			omit: {
+				password: true,
+			},
+		});
+
+		if (!user) throw new NotFoundException();
+
 		return user;
 	}
 }

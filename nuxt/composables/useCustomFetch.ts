@@ -19,7 +19,7 @@ export const useCustomFetch = <T>(url: string | (() => string), options?: UseFet
 			const { response } = ctx;
 			const { message } = response._data;
 			const defaultSummary = t("httpStatus.unexpected");
-			const defaultDetail = t("messages.tryAgainLater");
+			const defaultDetail = t("messages.tryAgain");
 			const summary = te(`httpStatus.${response.status}`) ? t(`httpStatus.${response.status}`) : defaultSummary;
 
 			if (message) {
