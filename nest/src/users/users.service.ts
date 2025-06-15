@@ -1,14 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hash } from 'argon2';
-import { User } from '@prisma/client';
-import { UserWithoutPassword } from '../common/types/user.type';
+import { User, UserWithPassword, UserWithRolesAndActions } from '../common/types/user.type';
+import { RolesService } from '../roles/roles.service';
 
 @Injectable()
 export class UsersService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		private rolesService: RolesService,
+	) {}
 
 	async create(createUserDto: CreateUserDto) {
 		const { password, roleIds, userActions, ...createUserData } = createUserDto;
@@ -120,11 +123,11 @@ export class UsersService {
 		});
 	}
 
-	async getMe(user: User) {
+	async getMe(user: UserWithRolesAndActions) {
 		return user;
 	}
 
-	async findOneByEmail(email: string): Promise<UserWithoutPassword> {
+	async findOneByEmail(email: string): Promise<User> {
 		const user = await this.prisma.user.findUnique({
 			where: {
 				email,
@@ -136,6 +139,66 @@ export class UsersService {
 		});
 
 		if (!user) throw new NotFoundException();
+
+		return user;
+	}
+
+	async findOneByEmailWithPassword(
+		email: string,
+		throwIfEmpty: boolean = true,
+	): Promise<UserWithRolesAndActions & UserWithPassword> {
+		const user = await this.prisma.user.findFirst({
+			where: {
+				email,
+				isActive: true,
+			},
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
+		});
+
+		if (!user && throwIfEmpty) throw new NotFoundException('messages.resourceNotFound');
+
+		return user!;
+	}
+
+	async createDefaultUser(
+		email: string,
+		password: string,
+		firstName: string,
+		lastName: string,
+	): Promise<UserWithRolesAndActions> {
+		const userRole = await this.rolesService.findOneByName('User');
+		const hashedPassword = await hash(password);
+
+		const user = await this.prisma.user.create({
+			data: {
+				email,
+				password: hashedPassword,
+				firstName,
+				lastName,
+				isActive: true,
+				userRoles: {
+					create: {
+						roleId: userRole.id,
+					},
+				},
+				userActions: {
+					createMany: {
+						data: userRole.roleActions.map(({ actionId }) => ({
+							actionId,
+							scope: 'OWN',
+						})),
+					},
+				},
+			},
+			omit: { password: true },
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
+		});
 
 		return user;
 	}

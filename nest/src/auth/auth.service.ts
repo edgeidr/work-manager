@@ -1,156 +1,56 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
-import { hash, verify } from 'argon2';
+import { verify } from 'argon2';
 import { SignInDto } from './dto/sign-in.dto';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { randomUUID } from 'crypto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { UsersService } from '../users/users.service';
+import { TokensService } from '../tokens/tokens.service';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private prisma: PrismaService,
-		private jwt: JwtService,
-		private config: ConfigService,
+		private tokensService: TokensService,
+		private usersService: UsersService,
 	) {}
 
 	async signUp(signUpDto: SignUpDto) {
-		const userRole = await this.prisma.role.findUnique({
-			where: {
-				name: 'User',
-			},
-			include: {
-				roleActions: true,
-			},
-		});
-
-		if (!userRole) throw new UnauthorizedException();
-
-		const hashedPassword = await hash(signUpDto.password);
-		const user = await this.prisma.user.create({
-			data: {
-				email: signUpDto.email,
-				password: hashedPassword,
-				firstName: signUpDto.firstName,
-				lastName: signUpDto.lastName,
-				isActive: true,
-				userRoles: {
-					create: {
-						roleId: userRole.id,
-					},
-				},
-				userActions: {
-					createMany: {
-						data: userRole.roleActions.map(({ actionId }) => ({
-							actionId: actionId,
-							scope: 'OWN',
-						})),
-					},
-				},
-			},
-			omit: {
-				password: true,
-			},
-			include: {
-				userRoles: true,
-				userActions: true,
-			},
-		});
+		const { email, password, firstName, lastName } = signUpDto;
+		const user = this.usersService.createDefaultUser(email, password, firstName, lastName);
 
 		return user;
 	}
 
 	async signIn(signInDto: SignInDto) {
-		const user = await this.prisma.user.findFirst({
-			where: {
-				email: signInDto.email,
-				isActive: true,
-			},
-			select: {
-				id: true,
-				firstName: true,
-				lastName: true,
-				email: true,
-				password: true,
-				userActions: true,
-				userRoles: true,
-			},
-		});
+		const { email, password, staySignedIn } = signInDto;
+		const user = await this.usersService.findOneByEmailWithPassword(email, false);
 
 		if (!user) throw new UnauthorizedException('messages.invalidCredentials');
 
-		const { password, ...userData } = user;
-		const passwordMatches = await verify(password, signInDto.password);
+		const { password: userPassword, ...userData } = user;
+		const passwordMatches = await verify(userPassword, password);
 
 		if (!passwordMatches) throw new UnauthorizedException('messages.invalidCredentials');
 
-		const { deviceId, accessToken, refreshToken } = await this.generateTokens(
+		const { deviceId, accessToken, refreshToken } = await this.tokensService.createSession(
 			user.id,
-			user.email,
-			signInDto.staySignedIn,
+			email,
+			staySignedIn,
 		);
-
-		await this.prisma.session.upsert({
-			where: {
-				userId_deviceId: {
-					userId: user.id,
-					deviceId: deviceId,
-				},
-			},
-			create: {
-				userId: user.id,
-				deviceId: deviceId,
-				accessToken: {
-					create: {
-						value: accessToken.value,
-						expiresAt: accessToken.expiresAt,
-					},
-				},
-				refreshToken: {
-					create: {
-						value: refreshToken.value,
-						expiresAt: refreshToken.expiresAt,
-					},
-				},
-			},
-			update: {
-				accessToken: {
-					update: {
-						value: accessToken.value,
-						expiresAt: accessToken.expiresAt,
-					},
-				},
-				refreshToken: {
-					update: {
-						value: refreshToken.value,
-						expiresAt: refreshToken.expiresAt,
-					},
-				},
-			},
-		});
 
 		return {
 			deviceId,
-			accessToken: {
-				value: accessToken.value,
-				totalDuration: accessToken.totalDuration,
-			},
-			refreshToken: {
-				value: refreshToken.value,
-				totalDuration: refreshToken.totalDuration,
-			},
+			accessToken,
+			refreshToken,
 			user: userData,
 		};
 	}
 
 	async signOut(deviceId: string) {
-		await this.prisma.session.deleteMany({
-			where: { deviceId },
-		});
+		await this.tokensService.removeSession(deviceId);
 	}
-
+	// do this next
 	async resetPassword(newPassword: string, token: string) {
 		const passwordResetToken = await this.prisma.passwordResetToken.findUnique({
 			where: {
@@ -225,54 +125,6 @@ export class AuthService {
 			refreshToken: {
 				value: newRefreshToken.value,
 				totalDuration: newRefreshToken.totalDuration,
-			},
-		};
-	}
-
-	async generateTokens(
-		userId: number,
-		email: string,
-		staySignedIn: boolean,
-	): Promise<{
-		deviceId: string;
-		accessToken: { value: string; expiresAt: Date; totalDuration: number };
-		refreshToken: { value: string; expiresAt: Date; totalDuration: number };
-	}> {
-		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
-		const refreshTokenDuration = staySignedIn
-			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
-			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
-		const accessTokenTotalDuration = accessTokenDuration * 1000 * 60;
-		const refreshTokenTotalDuration = refreshTokenDuration * 1000 * 60;
-		const accessTokenExpiration = new Date(Date.now() + accessTokenTotalDuration);
-		const refreshTokenExpiration = new Date(Date.now() + refreshTokenTotalDuration);
-		const deviceId = randomUUID();
-
-		const payload = {
-			sub: userId,
-			email,
-			deviceId,
-		};
-
-		const accessToken = await this.jwt.signAsync(payload, {
-			secret: this.config.get('JWT_ACCESS_TOKEN_SECRET'),
-		});
-
-		const refreshToken = await this.jwt.signAsync(payload, {
-			secret: this.config.get('JWT_REFRESH_TOKEN_SECRET'),
-		});
-
-		return {
-			deviceId,
-			accessToken: {
-				value: accessToken,
-				expiresAt: accessTokenExpiration,
-				totalDuration: accessTokenTotalDuration,
-			},
-			refreshToken: {
-				value: refreshToken,
-				expiresAt: refreshTokenExpiration,
-				totalDuration: refreshTokenTotalDuration,
 			},
 		};
 	}

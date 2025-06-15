@@ -9,7 +9,7 @@ export class ActionsService {
 
 	create(createActionDto: CreateActionDto) {
 		return this.prisma.action.create({
-			data: { ...createActionDto },
+			data: { name: createActionDto.name },
 		});
 	}
 
@@ -22,24 +22,20 @@ export class ActionsService {
 			where: { id },
 		});
 
-		if (!action) throw new NotFoundException();
+		if (!action) throw new NotFoundException('messages.resourceNotFound');
 
 		return action;
 	}
 
 	async update(id: number, updateActionDto: UpdateActionDto) {
-		await this.findOne(id);
-
 		return this.prisma.action.update({
 			where: { id },
-			data: { ...updateActionDto },
+			data: { name: updateActionDto.name },
 		});
 	}
 
 	async remove(id: number) {
-		await this.findOne(id);
-
-		return this.prisma.action.delete({
+		await this.prisma.action.delete({
 			where: { id },
 		});
 	}

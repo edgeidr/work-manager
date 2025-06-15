@@ -1,3 +1,13 @@
-import { User } from '@prisma/client';
+import { Prisma, User as PrismaUser } from '@prisma/client';
 
-export type UserWithoutPassword = Omit<User, 'password'>;
+export type User = Omit<PrismaUser, 'password'>;
+
+export type UserWithPassword = PrismaUser;
+
+export type UserWithRolesAndActions = Prisma.UserGetPayload<{
+	omit: { password: true };
+	include: {
+		userRoles: true;
+		userActions: true;
+	};
+}>;

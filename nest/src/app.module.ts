@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
 import { ActionsModule } from './actions/actions.module';
 import { OtpsModule } from './otps/otps.module';
+import { TokensModule } from './tokens/tokens.module';
 
 @Module({
 	imports: [
@@ -16,6 +17,7 @@ import { OtpsModule } from './otps/otps.module';
 		RolesModule,
 		ActionsModule,
 		OtpsModule,
+		TokensModule,
 	],
 })
 export class AppModule {}

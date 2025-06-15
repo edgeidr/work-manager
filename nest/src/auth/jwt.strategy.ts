@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { Request } from 'express';
+import { UserWithRolesAndActions } from '../common/types/user.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -18,7 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 		});
 	}
 
-	async validate(request: Request, payload: { sub: number; email: string }) {
+	async validate(request: Request, payload: { sub: number; email: string }): Promise<UserWithRolesAndActions> {
 		const deviceId = request.cookies['deviceId'];
 		const accessToken = request.cookies['accessToken'];
 
