@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
@@ -16,20 +16,6 @@ export class AuthController {
 		private configService: ConfigService,
 		private otpsService: OtpsService,
 	) {}
-
-	private getCookieOptions(maxAge: number): CookieOptions {
-		const secureEnvironments = ['production', 'staging'];
-		const useSecure = secureEnvironments.includes(this.configService.get('NODE_ENV', 'development'));
-		const baseDomain = this.configService.get('COOKIE_DOMAIN', '');
-
-		return {
-			httpOnly: true,
-			sameSite: 'strict',
-			secure: useSecure,
-			domain: baseDomain,
-			maxAge,
-		};
-	}
 
 	@Post('signup')
 	signUp(@Body() signUpDto: SignUpDto) {
@@ -50,9 +36,9 @@ export class AuthController {
 
 	@HttpCode(HttpStatus.NO_CONTENT)
 	@Post('signOut')
-	signOut(@Req() request: Request) {
+	async signOut(@Req() request: Request) {
 		const deviceId = request.cookies['deviceId'];
-		return this.authService.signOut(deviceId);
+		await this.authService.signOut(deviceId);
 	}
 
 	@HttpCode(HttpStatus.NO_CONTENT)
@@ -83,5 +69,19 @@ export class AuthController {
 	resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
 		const { newPassword, token } = resetPasswordDto;
 		return this.authService.resetPassword(newPassword, token);
+	}
+
+	private getCookieOptions(maxAge: number): CookieOptions {
+		const secureEnvironments = ['production', 'staging'];
+		const useSecure = secureEnvironments.includes(this.configService.get('NODE_ENV', 'development'));
+		const baseDomain = this.configService.get('COOKIE_DOMAIN', '');
+
+		return {
+			httpOnly: true,
+			sameSite: 'strict',
+			secure: useSecure,
+			domain: baseDomain,
+			maxAge,
+		};
 	}
 }

@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseIntP
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from '@prisma/client';
 import { JwtGuard } from '../auth/jwt.guard';
 import { Auth } from '../auth/auth.decorator';
+import { UserWithRolesAndActions } from '../common/types/user.type';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -12,7 +12,7 @@ export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get('me')
-	getMe(@Auth() user: User) {
+	getMe(@Auth() user: UserWithRolesAndActions) {
 		return this.usersService.getMe(user);
 	}
 

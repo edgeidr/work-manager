@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, ParseIntPipe, UseGuards } from '@nestjs/common';
+import {
+	Controller,
+	Get,
+	Post,
+	Body,
+	Patch,
+	Param,
+	Delete,
+	ParseIntPipe,
+	UseGuards,
+	HttpCode,
+	HttpStatus,
+} from '@nestjs/common';
 import { ActionsService } from './actions.service';
 import { CreateActionDto } from './dto/create-action.dto';
 import { UpdateActionDto } from './dto/update-action.dto';
@@ -29,8 +41,9 @@ export class ActionsController {
 		return this.actionsService.update(id, updateActionDto);
 	}
 
+	@HttpCode(HttpStatus.NO_CONTENT)
 	@Delete(':id')
-	remove(@Param('id', ParseIntPipe) id: number) {
-		return this.actionsService.remove(id);
+	async remove(@Param('id', ParseIntPipe) id: number) {
+		await this.actionsService.remove(id);
 	}
 }

@@ -2,6 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '@prisma/client';
+import { RoleWithActions } from '../common/types/role.type';
 
 @Injectable()
 export class RolesService {
@@ -80,5 +82,16 @@ export class RolesService {
 				roleActions: true,
 			},
 		});
+	}
+
+	async findOneByName(name: string): Promise<RoleWithActions> {
+		const role = await this.prisma.role.findUnique({
+			where: { name },
+			include: { roleActions: true },
+		});
+
+		if (!role) throw new NotFoundException('messages.resourceNotFound');
+
+		return role;
 	}
 }
