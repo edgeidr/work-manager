@@ -15,6 +15,8 @@ import { ActionsService } from './actions.service';
 import { CreateActionDto } from './dto/create-action.dto';
 import { UpdateActionDto } from './dto/update-action.dto';
 import { JwtGuard } from '../auth/jwt.guard';
+import { CreateActionInput } from './types/create-action.input';
+import { UpdateActionInput } from './types/update-action.input';
 
 @UseGuards(JwtGuard)
 @Controller('actions')
@@ -23,7 +25,9 @@ export class ActionsController {
 
 	@Post()
 	create(@Body() createActionDto: CreateActionDto) {
-		return this.actionsService.create(createActionDto);
+		const payload: CreateActionInput = { name: createActionDto.name };
+
+		return this.actionsService.create(payload);
 	}
 
 	@Get()
@@ -38,7 +42,9 @@ export class ActionsController {
 
 	@Patch(':id')
 	update(@Param('id', ParseIntPipe) id: number, @Body() updateActionDto: UpdateActionDto) {
-		return this.actionsService.update(id, updateActionDto);
+		const payload: UpdateActionInput = { name: updateActionDto.name };
+
+		return this.actionsService.update(id, payload);
 	}
 
 	@HttpCode(HttpStatus.NO_CONTENT)
