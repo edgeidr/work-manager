@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { hash } from 'argon2';
-import { User, UserWithPassword, UserWithRolesAndActions } from '../common/types/user.type';
+import { hash, verify } from 'argon2';
+import { User, UserWithPassword } from '../common/types/user.type';
 import { RolesService } from '../roles/roles.service';
+import { CreateUserInput } from './types/create-user.input';
+import { CredentialsInput } from './types/credentials.input';
+import { UpdatePasswordInput } from './types/update-password.input';
 
 @Injectable()
 export class UsersService {
@@ -53,7 +56,7 @@ export class UsersService {
 		return this.prisma.user.findMany();
 	}
 
-	async findOne(id: number) {
+	async findOne(id: number, exception?: HttpException) {
 		const user = await this.prisma.user.findUnique({
 			where: { id },
 			include: {
@@ -65,7 +68,7 @@ export class UsersService {
 			},
 		});
 
-		if (!user) throw new NotFoundException();
+		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
 		return user;
 	}
@@ -123,11 +126,11 @@ export class UsersService {
 		});
 	}
 
-	async getMe(user: UserWithRolesAndActions) {
+	async getMe(user: User) {
 		return user;
 	}
 
-	async findOneByEmail(email: string): Promise<User> {
+	async findOneByEmail(email: string, exception?: HttpException): Promise<User> {
 		const user = await this.prisma.user.findUnique({
 			where: {
 				email,
@@ -138,44 +141,18 @@ export class UsersService {
 			},
 		});
 
-		if (!user) throw new NotFoundException();
+		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
 		return user;
 	}
 
-	async findOneByEmailWithPassword(
-		email: string,
-		throwIfEmpty: boolean = true,
-	): Promise<UserWithRolesAndActions & UserWithPassword> {
-		const user = await this.prisma.user.findFirst({
-			where: {
-				email,
-				isActive: true,
-			},
-			include: {
-				userRoles: true,
-				userActions: true,
-			},
-		});
+	async createDefaultUser(input: CreateUserInput, exception?: HttpException): Promise<User> {
+		const { email, password, firstName, lastName } = input;
 
-		if (!user && throwIfEmpty) throw new NotFoundException('messages.resourceNotFound');
+		await this.validateEmail(email, exception);
 
-		return user!;
-	}
-
-	async createDefaultUser({
-		email,
-		password,
-		firstName,
-		lastName,
-	}: {
-		email: string;
-		password: string;
-		firstName: string;
-		lastName: string;
-	}): Promise<UserWithRolesAndActions> {
-		const userRole = await this.rolesService.findOneByName('User');
 		const hashedPassword = await hash(password);
+		const userRole = await this.rolesService.findOneByName('User');
 
 		const user = await this.prisma.user.create({
 			data: {
@@ -208,10 +185,44 @@ export class UsersService {
 		return user;
 	}
 
-	async updatePassword(password, userId: number) {
+	async updatePassword(input: UpdatePasswordInput, exception?: HttpException): Promise<void> {
+		const { password, userId } = input;
+
+		await this.findOne(userId, exception);
+
 		await this.prisma.user.update({
 			where: { id: userId },
 			data: { password },
 		});
+	}
+
+	async validateEmail(email: string, exception?: HttpException): Promise<void> {
+		const existing = await this.prisma.user.findUnique({ where: { email } });
+
+		if (existing) throw exception ?? new NotFoundException('messages.resourceNotFound');
+	}
+
+	async validateUserCredentials(input: CredentialsInput, exception?: HttpException): Promise<User> {
+		const { email, password } = input;
+		const user = await this.prisma.user.findFirst({
+			where: {
+				email,
+				isActive: true,
+			},
+			include: {
+				userRoles: true,
+				userActions: true,
+			},
+		});
+
+		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
+
+		const passwordMatches = await verify(user.password, password);
+
+		if (!passwordMatches) throw exception ?? new NotFoundException('messages.resourceNotFound');
+
+		const { password: userPassword, ...safeUser } = user;
+
+		return safeUser;
 	}
 }

@@ -5,6 +5,9 @@ import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { UsersService } from '../users/users.service';
+import { SendOtpInput } from './types/send-otp.input';
+import { CreateOtpInput } from './types/create-otp.input';
+import { OtpExpiry } from './types/otp-expiry.type';
 
 @Injectable()
 export class OtpsService {
@@ -14,9 +17,11 @@ export class OtpsService {
 		private usersService: UsersService,
 	) {}
 
-	async create(userId: number, type: OtpType) {
-		const OTP_DURATION = this.config.get('OTP_DURATION_IN_MINUTES', 300);
-		const expiry = new Date(Date.now() + OTP_DURATION * 1000 * 60);
+	async create(input: CreateOtpInput): Promise<OtpExpiry> {
+		const { userId, type } = input;
+		const duration = this.config.get('OTP_DURATION_IN_MINUTES', 300);
+		const totalDuration = duration * 1000 * 60;
+		const expiry = new Date(Date.now() + totalDuration);
 		const code = this.generate(6);
 		const otp = await this.prisma.otp.create({
 			data: {
@@ -33,12 +38,10 @@ export class OtpsService {
 		return otp;
 	}
 
-	async sendOtp(email: string, type: OtpType) {
-		const user = await this.prisma.user.findUnique({ where: { email } });
-
-		if (!user) throw new NotFoundException('messages.emailNotFound');
-
-		const code = this.create(user.id, type);
+	async sendOtp(input: SendOtpInput) {
+		const { email, type } = input;
+		const user = await this.usersService.findOneByEmail(email, new NotFoundException('messages.emailNotFound'));
+		const code = await this.create({ userId: user.id, type });
 
 		return code;
 	}

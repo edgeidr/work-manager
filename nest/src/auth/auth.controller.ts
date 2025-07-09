@@ -8,6 +8,10 @@ import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { OtpsService } from '../otps/otps.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SignUpInput } from './types/sign-up.input';
+import { SignInInput } from './types/sign-in.input';
+import { User } from '../common/types/user.type';
+import { OtpType } from '@prisma/client';
 
 @Controller('auth')
 export class AuthController {
@@ -19,19 +23,33 @@ export class AuthController {
 
 	@Post('signup')
 	signUp(@Body() signUpDto: SignUpDto) {
-		return this.authService.signUp(signUpDto);
+		const payload: SignUpInput = {
+			email: signUpDto.email,
+			password: signUpDto.password,
+			firstName: signUpDto.firstName,
+			lastName: signUpDto.lastName,
+		};
+
+		return this.authService.signUp(payload);
 	}
 
 	@HttpCode(HttpStatus.OK)
 	@Post('signin')
-	async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response) {
-		const { refreshToken, accessToken, deviceId, ...authData } = await this.authService.signIn(signInDto);
+	async signIn(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response): Promise<User> {
+		const payload: SignInInput = {
+			email: signInDto.email,
+			password: signInDto.password,
+			staySignedIn: signInDto.staySignedIn,
+		};
+
+		const { session, user } = await this.authService.signIn(payload);
+		const { refreshToken, accessToken, deviceId } = session;
 
 		response.cookie('deviceId', deviceId, this.getCookieOptions(refreshToken.totalDuration));
 		response.cookie('accessToken', accessToken.value, this.getCookieOptions(accessToken.totalDuration));
 		response.cookie('refreshToken', refreshToken.value, this.getCookieOptions(refreshToken.totalDuration));
 
-		return authData;
+		return user;
 	}
 
 	@HttpCode(HttpStatus.NO_CONTENT)
@@ -50,25 +68,24 @@ export class AuthController {
 	) {
 		const deviceId = request.cookies['deviceId'];
 		const oldRefreshToken = request.cookies['refreshToken'];
+		const { staySignedIn } = refreshTokenDto;
 		const { refreshToken: newRefreshToken, accessToken: newAccessToken } =
-			await this.authService.rotateRefreshToken(deviceId, oldRefreshToken, refreshTokenDto);
+			await this.authService.rotateRefreshToken({ deviceId, oldRefreshToken, staySignedIn });
 
 		response.cookie('deviceId', deviceId, this.getCookieOptions(newRefreshToken.totalDuration));
 		response.cookie('accessToken', newAccessToken.value, this.getCookieOptions(newAccessToken.totalDuration));
 		response.cookie('refreshToken', newRefreshToken.value, this.getCookieOptions(newRefreshToken.totalDuration));
-
-		return;
 	}
 
 	@Post('forgot-password')
 	forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-		return this.otpsService.sendOtp(forgotPasswordDto.email, 'FORGOT_PASSWORD');
+		return this.otpsService.sendOtp({ email: forgotPasswordDto.email, type: OtpType.FORGOT_PASSWORD });
 	}
 
 	@Post('reset-password')
-	resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+	async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
 		const { newPassword, token } = resetPasswordDto;
-		return this.authService.resetPassword(newPassword, token);
+		await this.authService.resetPassword({ password: newPassword, token });
 	}
 
 	private getCookieOptions(maxAge: number): CookieOptions {

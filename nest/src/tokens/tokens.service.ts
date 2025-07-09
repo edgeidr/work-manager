@@ -3,7 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { PasswordResetToken } from '@prisma/client';
+import { PasswordResetToken, Session, User } from '@prisma/client';
+import { SessionType } from './types/session.type';
+import { CreateSessionInput } from './types/create-session.input';
+import { FindSessionInput } from './types/find-session.input';
+import { UpdateSessionInput } from './types/update-session.input';
 
 @Injectable()
 export class TokensService {
@@ -13,29 +17,16 @@ export class TokensService {
 		private prisma: PrismaService,
 	) {}
 
-	async createSession(
-		userId: number,
-		email: string,
-		staySignedIn: boolean,
-	): Promise<{
-		deviceId: string;
-		accessToken: { value: string; expiresAt: Date; totalDuration: number };
-		refreshToken: { value: string; expiresAt: Date; totalDuration: number };
-	}> {
+	async createSession(input: CreateSessionInput): Promise<SessionType> {
+		const { userId, email, staySignedIn } = input;
 		const deviceId = randomUUID();
 		const accessToken = await this.generateAccessToken(userId, email, deviceId);
 		const refreshToken = await this.generateRefreshToken(userId, email, deviceId, staySignedIn);
 
-		await this.prisma.session.upsert({
-			where: {
-				userId_deviceId: {
-					userId: userId,
-					deviceId: deviceId,
-				},
-			},
-			create: {
-				userId: userId,
-				deviceId: deviceId,
+		await this.prisma.session.create({
+			data: {
+				userId,
+				deviceId,
 				accessToken: {
 					create: {
 						value: accessToken.value,
@@ -49,7 +40,43 @@ export class TokensService {
 					},
 				},
 			},
-			update: {
+		});
+
+		return {
+			deviceId,
+			accessToken,
+			refreshToken,
+		};
+	}
+
+	async findSession(input: FindSessionInput, exception?: HttpException): Promise<Session & { user: User }> {
+		const { deviceId, refreshToken } = input;
+		const session = await this.prisma.session.findFirst({
+			where: {
+				deviceId,
+				refreshToken: {
+					value: refreshToken,
+				},
+			},
+			include: {
+				user: true,
+			},
+		});
+
+		if (!session) throw exception ?? new NotFoundException('messages.resourceNotFound');
+
+		return session;
+	}
+
+	async updateSession(input: UpdateSessionInput, exception?: HttpException): Promise<SessionType> {
+		const { deviceId, refreshToken: oldRefreshToken, staySignedIn } = input;
+		const { id, user } = await this.findSession({ deviceId, refreshToken: oldRefreshToken }, exception);
+		const accessToken = await this.generateAccessToken(user.id, user.email, deviceId);
+		const refreshToken = await this.generateRefreshToken(user.id, user.email, deviceId, staySignedIn);
+
+		await this.prisma.session.update({
+			where: { id },
+			data: {
 				accessToken: {
 					update: {
 						value: accessToken.value,
@@ -78,7 +105,7 @@ export class TokensService {
 		});
 	}
 
-	async validatePasswordResetToken(token: string, exception: HttpException): Promise<PasswordResetToken> {
+	async validatePasswordResetToken(token: string, exception?: HttpException): Promise<PasswordResetToken> {
 		const passwordResetToken = await this.prisma.passwordResetToken.findUnique({
 			where: {
 				value: token,

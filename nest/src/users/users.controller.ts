@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from '../auth/jwt.guard';
 import { Auth } from '../auth/auth.decorator';
-import { UserWithRolesAndActions } from '../common/types/user.type';
+import { User } from '../common/types/user.type';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -12,7 +12,7 @@ export class UsersController {
 	constructor(private readonly usersService: UsersService) {}
 
 	@Get('me')
-	getMe(@Auth() user: UserWithRolesAndActions) {
+	getMe(@Auth() user: User) {
 		return this.usersService.getMe(user);
 	}
 
