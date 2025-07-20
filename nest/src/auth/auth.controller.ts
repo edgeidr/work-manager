@@ -10,8 +10,8 @@ import { OtpsService } from '../otps/otps.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SignUpInput } from './types/sign-up.input';
 import { SignInInput } from './types/sign-in.input';
-import { User } from '../common/types/user.type';
 import { OtpType } from '@prisma/client';
+import { User } from '../users/types/user.type';
 
 @Controller('auth')
 export class AuthController {

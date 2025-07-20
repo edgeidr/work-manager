@@ -2,11 +2,11 @@ import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/
 import { UsersService } from '../users/users.service';
 import { TokensService } from '../tokens/tokens.service';
 import { SignUpInput } from './types/sign-up.input';
-import { User } from '../common/types/user.type';
 import { SignInInput } from './types/sign-in.input';
 import { ResetPasswordInput } from './types/reset-password.input';
 import { RotateRefreshTokenInput } from './types/rotate-refresh-token.input';
 import { SessionType } from '../tokens/types/session.type';
+import { User } from '../users/types/user.type';
 
 @Injectable()
 export class AuthService {

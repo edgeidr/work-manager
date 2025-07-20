@@ -1,13 +1,13 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { hash, verify } from 'argon2';
-import { User, UserWithPassword } from '../common/types/user.type';
 import { RolesService } from '../roles/roles.service';
 import { CreateUserInput } from './types/create-user.input';
 import { CredentialsInput } from './types/credentials.input';
 import { UpdatePasswordInput } from './types/update-password.input';
+import { User } from './types/user.type';
 
 @Injectable()
 export class UsersService {
