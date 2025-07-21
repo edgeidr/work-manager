@@ -1,13 +1,12 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { OtpType } from '@prisma/client';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
-import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { UsersService } from '../users/users.service';
 import { SendOtpInput } from './types/send-otp.input';
 import { CreateOtpInput } from './types/create-otp.input';
 import { OtpExpiry } from './types/otp-expiry.type';
+import { VerifyOtpInput } from './types/verify-otp.input';
 
 @Injectable()
 export class OtpsService {
@@ -46,11 +45,11 @@ export class OtpsService {
 		return code;
 	}
 
-	async verify(verifyOtpDto: VerifyOtpDto) {
-		const MAX_ATTEMPTS = 3;
-		const { email, code, type } = verifyOtpDto;
+	async verify(input: VerifyOtpInput) {
+		const MAX_ATTEMPTS = this.config.get('MAX_OTP_ATTEMPTS', 3);
+		const { email, code, type } = input;
 
-		const user = await this.usersService.findOneByEmail(email);
+		const user = await this.usersService.findOneByEmail(email, new BadRequestException('messages.tryAgain'));
 
 		const otp = await this.prisma.otp.findFirst({
 			where: {
@@ -63,13 +62,13 @@ export class OtpsService {
 		});
 
 		if (!otp) {
-			await this.incrementAttempts(user.id, type);
-			throw new BadRequestException('messages.invalidOtp');
+			await this.incrementAttempts({ userId: user.id, type: type });
+			return false;
 		}
 
 		if (otp.attempts >= MAX_ATTEMPTS) {
-			await this.incrementAttempts(user.id, type);
-			throw new ForbiddenException('messages.maxOtpAttempts');
+			await this.incrementAttempts({ userId: user.id, type: type });
+			return false;
 		}
 
 		this.markAsUsed(otp.id);
@@ -77,7 +76,7 @@ export class OtpsService {
 		return true;
 	}
 
-	private async incrementAttempts(userId: number, type: OtpType) {
+	private async incrementAttempts({ userId, type }) {
 		await this.prisma.otp.updateMany({
 			where: {
 				userId,
