@@ -9,10 +9,10 @@ export class ActionsService {
 	constructor(private prisma: PrismaService) {}
 
 	create(input: CreateActionInput): Promise<Action> {
-		const { name } = input;
-
 		return this.prisma.action.create({
-			data: { name },
+			data: {
+				name: input.name,
+			},
 		});
 	}
 
@@ -33,11 +33,11 @@ export class ActionsService {
 	async update(id: number, input: UpdateActionInput): Promise<Action> {
 		await this.findOne(id);
 
-		const { name } = input;
-
 		return this.prisma.action.update({
 			where: { id },
-			data: { name },
+			data: {
+				name: input.name,
+			},
 		});
 	}
 
