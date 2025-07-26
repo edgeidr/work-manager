@@ -5,6 +5,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from '../auth/jwt.guard';
 import { Auth } from '../auth/auth.decorator';
 import { User } from './types/user.type';
+import { CreateUserInput } from './types/create-user.input';
+import { UpdateUserInput } from './types/update-user.input';
 
 @UseGuards(JwtGuard)
 @Controller('users')
@@ -18,7 +20,17 @@ export class UsersController {
 
 	@Post()
 	create(@Body() createUserDto: CreateUserDto) {
-		return this.usersService.create(createUserDto);
+		const payload: CreateUserInput = {
+			email: createUserDto.email,
+			password: createUserDto.password,
+			firstName: createUserDto.firstName,
+			lastName: createUserDto.lastName,
+			isActive: createUserDto.isActive,
+			roleIds: createUserDto.roleIds,
+			userActions: createUserDto.userActions,
+		};
+
+		return this.usersService.create(payload);
 	}
 
 	@Get()
@@ -33,7 +45,16 @@ export class UsersController {
 
 	@Patch(':id')
 	update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
-		return this.usersService.update(id, updateUserDto);
+		const payload: UpdateUserInput = {
+			email: updateUserDto.email,
+			firstName: updateUserDto.firstName,
+			lastName: updateUserDto.lastName,
+			isActive: updateUserDto.isActive,
+			roleIds: updateUserDto.roleIds,
+			userActions: updateUserDto.userActions,
+		};
+
+		return this.usersService.update(id, payload);
 	}
 
 	@Delete(':id')

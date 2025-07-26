@@ -1,26 +1,6 @@
-import { Scope } from '@prisma/client';
+import { UserActionDto } from './user-action.dto';
 import { Type } from 'class-transformer';
-import {
-	IsArray,
-	IsBoolean,
-	IsEmail,
-	IsEnum,
-	IsInt,
-	IsNotEmpty,
-	IsOptional,
-	IsString,
-	ValidateNested,
-} from 'class-validator';
-
-export class UserActionDto {
-	@IsNotEmpty()
-	@IsInt()
-	actionId: number;
-
-	@IsNotEmpty()
-	@IsEnum(Scope)
-	scope: Scope;
-}
+import { IsArray, IsBoolean, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class CreateUserDto {
 	@IsNotEmpty()
@@ -39,9 +19,9 @@ export class CreateUserDto {
 	@IsString()
 	lastName: string;
 
-	@IsNotEmpty()
+	@IsOptional()
 	@IsBoolean()
-	isActive: boolean;
+	isActive?: boolean = true;
 
 	@IsOptional()
 	@IsArray()

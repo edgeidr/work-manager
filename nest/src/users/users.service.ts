@@ -1,6 +1,4 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { hash, verify } from 'argon2';
 import { RolesService } from '../roles/roles.service';
@@ -8,6 +6,7 @@ import { CreateUserInput } from './types/create-user.input';
 import { CredentialsInput } from './types/credentials.input';
 import { UpdatePasswordInput } from './types/update-password.input';
 import { User } from './types/user.type';
+import { UpdateUserInput } from './types/update-user.input';
 
 @Injectable()
 export class UsersService {
@@ -16,18 +15,20 @@ export class UsersService {
 		private rolesService: RolesService,
 	) {}
 
-	async create(createUserDto: CreateUserDto) {
-		const { password, roleIds, userActions, ...createUserData } = createUserDto;
-		const hashedPassword = await hash(createUserDto.password);
+	async create(input: CreateUserInput): Promise<User> {
+		const hashedPassword = await hash(input.password);
 
 		return this.prisma.user.create({
 			data: {
-				...createUserData,
+				email: input.email,
 				password: hashedPassword,
+				firstName: input.firstName,
+				lastName: input.lastName,
+				isActive: input.isActive,
 				userRoles: {
 					createMany: {
 						data:
-							roleIds?.map((roleId) => ({
+							input.roleIds?.map((roleId) => ({
 								roleId: roleId,
 							})) || [],
 					},
@@ -35,7 +36,7 @@ export class UsersService {
 				userActions: {
 					createMany: {
 						data:
-							userActions?.map(({ actionId, scope }) => ({
+							input.userActions?.map(({ actionId, scope }) => ({
 								actionId: actionId,
 								scope: scope,
 							})) || [],
@@ -46,26 +47,24 @@ export class UsersService {
 				userRoles: true,
 				userActions: true,
 			},
-			omit: {
-				password: true,
-			},
+			omit: { password: true },
 		});
 	}
 
-	findAll() {
-		return this.prisma.user.findMany();
+	findAll(): Promise<User[]> {
+		return this.prisma.user.findMany({
+			omit: { password: true },
+		});
 	}
 
-	async findOne(id: number, exception?: HttpException) {
+	async findOne(id: number, exception?: HttpException): Promise<User> {
 		const user = await this.prisma.user.findUnique({
 			where: { id },
 			include: {
 				userRoles: true,
 				userActions: true,
 			},
-			omit: {
-				password: true,
-			},
+			omit: { password: true },
 		});
 
 		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
@@ -73,30 +72,31 @@ export class UsersService {
 		return user;
 	}
 
-	async update(id: number, updateUserDto: UpdateUserDto) {
-		await this.findOne(id);
-
-		const { roleIds, userActions, ...updateUserData } = updateUserDto;
+	async update(id: number, input: UpdateUserInput): Promise<User> {
+		await this.findOne(id, new BadRequestException('messages.tryAgain'));
 
 		return this.prisma.user.update({
 			where: { id },
 			data: {
-				...updateUserData,
-				...(roleIds && {
+				email: input.email,
+				firstName: input.firstName,
+				lastName: input.lastName,
+				isActive: input.isActive,
+				...(input.roleIds && {
 					userRoles: {
 						deleteMany: {},
 						createMany: {
-							data: roleIds.map((roleId) => ({
+							data: input.roleIds.map((roleId) => ({
 								roleId,
 							})),
 						},
 					},
 				}),
-				...(userActions && {
+				...(input.userActions && {
 					userActions: {
 						deleteMany: {},
 						createMany: {
-							data: userActions.map(({ actionId, scope }) => ({
+							data: input.userActions.map(({ actionId, scope }) => ({
 								actionId,
 								scope,
 							})),
@@ -111,22 +111,15 @@ export class UsersService {
 		});
 	}
 
-	async remove(id: number) {
+	async remove(id: number): Promise<void> {
 		await this.findOne(id);
 
-		return this.prisma.user.delete({
+		await this.prisma.user.delete({
 			where: { id },
-			omit: {
-				password: true,
-			},
-			include: {
-				userRoles: true,
-				userActions: true,
-			},
 		});
 	}
 
-	async getMe(user: User) {
+	async getMe(user: User): Promise<User> {
 		return user;
 	}
 
@@ -136,9 +129,7 @@ export class UsersService {
 				email,
 				isActive: true,
 			},
-			omit: {
-				password: true,
-			},
+			omit: { password: true },
 		});
 
 		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
@@ -147,19 +138,17 @@ export class UsersService {
 	}
 
 	async createDefaultUser(input: CreateUserInput, exception?: HttpException): Promise<User> {
-		const { email, password, firstName, lastName } = input;
+		await this.validateEmail(input.email, exception);
 
-		await this.validateEmail(email, exception);
-
-		const hashedPassword = await hash(password);
+		const hashedPassword = await hash(input.password);
 		const userRole = await this.rolesService.findOneByName('User');
 
 		const user = await this.prisma.user.create({
 			data: {
-				email,
+				email: input.email,
 				password: hashedPassword,
-				firstName,
-				lastName,
+				firstName: input.firstName,
+				lastName: input.lastName,
 				isActive: true,
 				userRoles: {
 					create: {
@@ -186,13 +175,11 @@ export class UsersService {
 	}
 
 	async updatePassword(input: UpdatePasswordInput, exception?: HttpException): Promise<void> {
-		const { password, userId } = input;
-
-		await this.findOne(userId, exception);
+		await this.findOne(input.userId, exception);
 
 		await this.prisma.user.update({
-			where: { id: userId },
-			data: { password },
+			where: { id: input.userId },
+			data: { password: input.password },
 		});
 	}
 
@@ -203,10 +190,9 @@ export class UsersService {
 	}
 
 	async validateUserCredentials(input: CredentialsInput, exception?: HttpException): Promise<User> {
-		const { email, password } = input;
 		const user = await this.prisma.user.findFirst({
 			where: {
-				email,
+				email: input.email,
 				isActive: true,
 			},
 			include: {
@@ -217,11 +203,11 @@ export class UsersService {
 
 		if (!user) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
-		const passwordMatches = await verify(user.password, password);
+		const passwordMatches = await verify(user.password, input.password);
 
 		if (!passwordMatches) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
-		const { password: userPassword, ...safeUser } = user;
+		const { password, ...safeUser } = user;
 
 		return safeUser;
 	}

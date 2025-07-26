@@ -1,10 +1,9 @@
 import { UserActionInput } from './user-action.input';
 
-export interface CreateUserInput {
-	email: string;
-	password: string;
-	firstName: string;
-	lastName: string;
+export interface UpdateUserInput {
+	email?: string;
+	firstName?: string;
+	lastName?: string;
 	isActive?: boolean;
 	roleIds?: number[];
 	userActions?: UserActionInput[];
