@@ -12,9 +12,9 @@ export class OtpsController {
 		const payload: VerifyOtpInput = {
 			email: verifyOtpDto.email,
 			code: verifyOtpDto.code,
-			type: verifyOtpDto.type
-		}
-		
+			type: verifyOtpDto.type,
+		};
+
 		return this.otpsService.verify(payload);
 	}
 }
