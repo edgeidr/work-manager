@@ -16,27 +16,39 @@ export class AuthService {
 	) {}
 
 	async signUp(input: SignUpInput): Promise<User> {
-		const { email, password, firstName, lastName } = input;
 		const user = await this.usersService.createDefaultUser(
-			{ email, password, firstName, lastName },
-			new BadRequestException([{ field: 'email', error: ['validation.emailAlreadyExists'] }]),
+			{
+				email: input.email,
+				password: input.password,
+				firstName: input.firstName,
+				lastName: input.lastName,
+			},
+			new BadRequestException([
+				{
+					field: 'email',
+					error: ['validation.emailAlreadyExists'],
+				},
+			]),
 		);
 
 		return user;
 	}
 
 	async signIn(input: SignInInput): Promise<{ user: User; session: SessionType }> {
-		const { email, password, staySignedIn } = input;
 		const user = await this.usersService.validateUserCredentials(
-			{ email, password },
+			{
+				email: input.email,
+				password: input.password,
+			},
 			new UnauthorizedException('messages.invalidCredentials'),
 		);
-		const session = await this.tokensService.createSession({ userId: user.id, email, staySignedIn });
+		const session = await this.tokensService.createSession({
+			userId: user.id,
+			email: input.email,
+			staySignedIn: input.staySignedIn,
+		});
 
-		return {
-			session,
-			user,
-		};
+		return { session, user };
 	}
 
 	async signOut(deviceId: string): Promise<void> {
@@ -44,20 +56,29 @@ export class AuthService {
 	}
 
 	async resetPassword(input: ResetPasswordInput): Promise<void> {
-		const { password, token } = input;
 		const { userId } = await this.tokensService.validatePasswordResetToken(
-			token,
+			input.token,
 			new BadRequestException('messages.tryAgain'),
 		);
 
-		await this.usersService.updatePassword({ password, userId }, new BadRequestException('messages.tryAgain'));
+		await this.usersService.updatePassword(
+			{
+				password: input.password,
+				userId,
+			},
+			new BadRequestException('messages.tryAgain'),
+		);
+
 		await this.tokensService.removePasswordResetTokensForUser(userId);
 	}
 
 	async rotateRefreshToken(input: RotateRefreshTokenInput): Promise<SessionType> {
-		const { deviceId, oldRefreshToken, staySignedIn } = input;
 		const session = await this.tokensService.updateSession(
-			{ deviceId, refreshToken: oldRefreshToken, staySignedIn },
+			{
+				deviceId: input.deviceId,
+				refreshToken: input.oldRefreshToken,
+				staySignedIn: input.staySignedIn,
+			},
 			new UnauthorizedException(),
 		);
 
