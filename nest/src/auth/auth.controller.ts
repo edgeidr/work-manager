@@ -79,7 +79,7 @@ export class AuthController {
 
 	@Post('forgot-password')
 	forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-		return this.otpsService.sendOtp({ email: forgotPasswordDto.email, type: OtpType.FORGOT_PASSWORD });
+		return this.otpsService.send({ email: forgotPasswordDto.email, type: OtpType.FORGOT_PASSWORD });
 	}
 
 	@Post('reset-password')
