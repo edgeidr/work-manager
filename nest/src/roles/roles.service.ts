@@ -1,96 +1,84 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { UpdateRoleDto } from './dto/update-role.dto';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '@prisma/client';
 import { RoleWithActions } from './types/role.type';
+import { CreateRoleInput } from './types/create-role.input';
+import { UpdateRoleInput } from './types/update-role.input';
 
 @Injectable()
 export class RolesService {
 	constructor(private prisma: PrismaService) {}
 
-	create(createRoleDto: CreateRoleDto) {
-		const { actionIds, ...createRoleData } = createRoleDto;
-
+	create(input: CreateRoleInput): Promise<RoleWithActions> {
 		return this.prisma.role.create({
 			data: {
-				...createRoleData,
+				name: input.name,
 				roleActions: {
 					createMany: {
 						data:
-							actionIds?.map((id) => ({
+							input.actionIds?.map((id) => ({
 								actionId: id,
 							})) || [],
 					},
 				},
 			},
-			include: {
-				roleActions: true,
-			},
+			include: { roleActions: true },
 		});
 	}
 
-	findAll() {
-		return this.prisma.role.findMany();
+	findAll(): Promise<RoleWithActions[]> {
+		return this.prisma.role.findMany({
+			include: { roleActions: true },
+		});
 	}
 
-	async findOne(id: number) {
+	async findOne(id: number, exception?: HttpException): Promise<RoleWithActions> {
 		const role = await this.prisma.role.findUnique({
 			where: { id },
-			include: {
-				roleActions: true,
-			},
+			include: { roleActions: true },
 		});
 
-		if (!role) throw new NotFoundException();
+		if (!role) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
 		return role;
 	}
 
-	async update(id: number, updateRoleDto: UpdateRoleDto) {
+	async update(id: number, input: UpdateRoleInput): Promise<RoleWithActions> {
 		await this.findOne(id);
-
-		const { actionIds, ...updateRoleData } = updateRoleDto;
 
 		return this.prisma.role.update({
 			where: { id },
 			data: {
-				...updateRoleData,
-				...(actionIds && {
+				name: input.name,
+				...(input.actionIds && {
 					roleActions: {
 						deleteMany: {},
 						createMany: {
-							data: actionIds.map((actionId) => ({
+							data: input.actionIds.map((actionId) => ({
 								actionId: actionId,
 							})),
 						},
 					},
 				}),
 			},
-			include: {
-				roleActions: true,
-			},
+			include: { roleActions: true },
 		});
 	}
 
-	async remove(id: number) {
+	async remove(id: number): Promise<void> {
 		await this.findOne(id);
 
-		return this.prisma.role.delete({
+		await this.prisma.role.delete({
 			where: { id },
-			include: {
-				roleActions: true,
-			},
 		});
 	}
 
-	async findOneByName(name: string): Promise<RoleWithActions> {
+	async findOneByName(name: string, exception?: HttpException): Promise<RoleWithActions> {
 		const role = await this.prisma.role.findUnique({
 			where: { name },
 			include: { roleActions: true },
 		});
 
-		if (!role) throw new NotFoundException('messages.resourceNotFound');
+		if (!role) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
 		return role;
 	}

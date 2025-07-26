@@ -3,6 +3,8 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtGuard } from '../auth/jwt.guard';
+import { UpdateRoleInput } from './types/update-role.input';
+import { CreateRoleInput } from './types/create-role.input';
 
 @UseGuards(JwtGuard)
 @Controller('roles')
@@ -11,7 +13,12 @@ export class RolesController {
 
 	@Post()
 	create(@Body() createRoleDto: CreateRoleDto) {
-		return this.rolesService.create(createRoleDto);
+		const payload: CreateRoleInput = {
+			name: createRoleDto.name,
+			actionIds: createRoleDto.actionIds,
+		};
+
+		return this.rolesService.create(payload);
 	}
 
 	@Get()
@@ -26,7 +33,12 @@ export class RolesController {
 
 	@Patch(':id')
 	update(@Param('id', ParseIntPipe) id: number, @Body() updateRoleDto: UpdateRoleDto) {
-		return this.rolesService.update(id, updateRoleDto);
+		const payload: UpdateRoleInput = {
+			name: updateRoleDto.name,
+			actionIds: updateRoleDto.actionIds,
+		};
+
+		return this.rolesService.update(id, payload);
 	}
 
 	@Delete(':id')
