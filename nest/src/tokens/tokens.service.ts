@@ -8,6 +8,9 @@ import { SessionType } from './types/session.type';
 import { CreateSessionInput } from './types/create-session.input';
 import { FindSessionInput } from './types/find-session.input';
 import { UpdateSessionInput } from './types/update-session.input';
+import { GenerateAccessTokenInput } from './types/generate-access-token.input';
+import { GenerateRefreshTokenInput } from './types/generate-refresh-token.input';
+import { Token } from './types/token.type';
 
 @Injectable()
 export class TokensService {
@@ -18,14 +21,24 @@ export class TokensService {
 	) {}
 
 	async createSession(input: CreateSessionInput): Promise<SessionType> {
-		const { userId, email, staySignedIn } = input;
 		const deviceId = randomUUID();
-		const accessToken = await this.generateAccessToken(userId, email, deviceId);
-		const refreshToken = await this.generateRefreshToken(userId, email, deviceId, staySignedIn);
+
+		const accessToken = await this.generateAccessToken({
+			userId: input.userId,
+			email: input.email,
+			deviceId,
+		});
+
+		const refreshToken = await this.generateRefreshToken({
+			userId: input.userId,
+			email: input.email,
+			deviceId,
+			staySignedIn: input.staySignedIn,
+		});
 
 		await this.prisma.session.create({
 			data: {
-				userId,
+				userId: input.userId,
 				deviceId,
 				accessToken: {
 					create: {
@@ -50,17 +63,14 @@ export class TokensService {
 	}
 
 	async findSession(input: FindSessionInput, exception?: HttpException): Promise<Session & { user: User }> {
-		const { deviceId, refreshToken } = input;
 		const session = await this.prisma.session.findFirst({
 			where: {
-				deviceId,
+				deviceId: input.deviceId,
 				refreshToken: {
-					value: refreshToken,
+					value: input.refreshToken,
 				},
 			},
-			include: {
-				user: true,
-			},
+			include: { user: true },
 		});
 
 		if (!session) throw exception ?? new NotFoundException('messages.resourceNotFound');
@@ -69,10 +79,26 @@ export class TokensService {
 	}
 
 	async updateSession(input: UpdateSessionInput, exception?: HttpException): Promise<SessionType> {
-		const { deviceId, refreshToken: oldRefreshToken, staySignedIn } = input;
-		const { id, user } = await this.findSession({ deviceId, refreshToken: oldRefreshToken }, exception);
-		const accessToken = await this.generateAccessToken(user.id, user.email, deviceId);
-		const refreshToken = await this.generateRefreshToken(user.id, user.email, deviceId, staySignedIn);
+		const { id, user } = await this.findSession(
+			{
+				deviceId: input.deviceId,
+				refreshToken: input.refreshToken,
+			},
+			exception,
+		);
+
+		const accessToken = await this.generateAccessToken({
+			userId: user.id,
+			email: user.email,
+			deviceId: input.deviceId,
+		});
+
+		const refreshToken = await this.generateRefreshToken({
+			userId: user.id,
+			email: user.email,
+			deviceId: input.deviceId,
+			staySignedIn: input.staySignedIn,
+		});
 
 		await this.prisma.session.update({
 			where: { id },
@@ -93,13 +119,13 @@ export class TokensService {
 		});
 
 		return {
-			deviceId,
+			deviceId: input.deviceId,
 			accessToken,
 			refreshToken,
 		};
 	}
 
-	async removeSession(deviceId: string) {
+	async removeSession(deviceId: string): Promise<void> {
 		await this.prisma.session.deleteMany({
 			where: { deviceId },
 		});
@@ -125,18 +151,14 @@ export class TokensService {
 		});
 	}
 
-	private async generateAccessToken(
-		userId: number,
-		email: string,
-		deviceId: string,
-	): Promise<{ value: string; expiresAt: Date; totalDuration: number }> {
+	private async generateAccessToken(input: GenerateAccessTokenInput): Promise<Token> {
 		const accessTokenDuration = this.config.get('ACCESS_TOKEN_DURATION_IN_MINUTES', 60);
 		const accessTokenTotalDuration = accessTokenDuration * 1000 * 60;
 		const accessTokenExpiration = new Date(Date.now() + accessTokenTotalDuration);
 		const payload = {
-			sub: userId,
-			email,
-			deviceId,
+			sub: input.userId,
+			email: input.email,
+			deviceId: input.deviceId,
 		};
 
 		const accessToken = await this.jwt.signAsync(payload, {
@@ -150,21 +172,16 @@ export class TokensService {
 		};
 	}
 
-	private async generateRefreshToken(
-		userId: number,
-		email: string,
-		deviceId: string,
-		staySignedIn: boolean,
-	): Promise<{ value: string; expiresAt: Date; totalDuration: number }> {
-		const refreshTokenDuration = staySignedIn
+	private async generateRefreshToken(input: GenerateRefreshTokenInput): Promise<Token> {
+		const refreshTokenDuration = input.staySignedIn
 			? this.config.get('REFRESH_TOKEN_DURATION_LONG_IN_MINUTES', 1440)
 			: this.config.get('REFRESH_TOKEN_DURATION_IN_MINUTES', 10080);
 		const refreshTokenTotalDuration = refreshTokenDuration * 1000 * 60;
 		const refreshTokenExpiration = new Date(Date.now() + refreshTokenTotalDuration);
 		const payload = {
-			sub: userId,
-			email,
-			deviceId,
+			sub: input.userId,
+			email: input.email,
+			deviceId: input.deviceId,
 		};
 
 		const refreshToken = await this.jwt.signAsync(payload, {
