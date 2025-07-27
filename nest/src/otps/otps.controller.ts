@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { OtpsService } from './otps.service';
-import { VerifyOtpInput } from './types/verify-otp.input';
+import { VerifyOtpInput } from './inputs/verify-otp.input';
 
 @Controller('otps')
 export class OtpsController {

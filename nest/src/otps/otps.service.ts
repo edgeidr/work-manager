@@ -3,11 +3,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { randomInt } from 'crypto';
 import { UsersService } from '../users/users.service';
-import { SendOtpInput } from './types/send-otp.input';
-import { CreateOtpInput } from './types/create-otp.input';
+import { SendOtpInput } from './inputs/send-otp.input';
+import { CreateOtpInput } from './inputs/create-otp.input';
 import { OtpExpiry } from './types/otp-expiry.type';
-import { VerifyOtpInput } from './types/verify-otp.input';
-import { OtpInput } from './types/otp.input';
+import { VerifyOtpInput } from './inputs/verify-otp.input';
+import { OtpInput } from './inputs/otp.input';
 
 @Injectable()
 export class OtpsService {
