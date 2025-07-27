@@ -5,11 +5,11 @@ import { randomUUID } from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordResetToken, Session, User } from '@prisma/client';
 import { SessionType } from './types/session.type';
-import { CreateSessionInput } from './types/create-session.input';
-import { FindSessionInput } from './types/find-session.input';
-import { UpdateSessionInput } from './types/update-session.input';
-import { GenerateAccessTokenInput } from './types/generate-access-token.input';
-import { GenerateRefreshTokenInput } from './types/generate-refresh-token.input';
+import { CreateSessionInput } from './inputs/create-session.input';
+import { FindSessionInput } from './inputs/find-session.input';
+import { UpdateSessionInput } from './inputs/update-session.input';
+import { GenerateAccessTokenInput } from './inputs/generate-access-token.input';
+import { GenerateRefreshTokenInput } from './inputs/generate-refresh-token.input';
 import { Token } from './types/token.type';
 
 @Injectable()
