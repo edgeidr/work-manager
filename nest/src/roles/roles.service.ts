@@ -1,8 +1,8 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RoleWithActions } from './types/role.type';
-import { CreateRoleInput } from './types/create-role.input';
-import { UpdateRoleInput } from './types/update-role.input';
+import { CreateRoleInput } from './inputs/create-role.input';
+import { UpdateRoleInput } from './inputs/update-role.input';
 
 @Injectable()
 export class RolesService {

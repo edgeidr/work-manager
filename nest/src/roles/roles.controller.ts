@@ -3,8 +3,8 @@ import { RolesService } from './roles.service';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtGuard } from '../auth/jwt.guard';
-import { UpdateRoleInput } from './types/update-role.input';
-import { CreateRoleInput } from './types/create-role.input';
+import { UpdateRoleInput } from './inputs/update-role.input';
+import { CreateRoleInput } from './inputs/create-role.input';
 
 @UseGuards(JwtGuard)
 @Controller('roles')
