@@ -1,8 +1,8 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateActionInput } from './types/create-action.input';
+import { CreateActionInput } from './inputs/create-action.input';
 import { Action } from '@prisma/client';
-import { UpdateActionInput } from './types/update-action.input';
+import { UpdateActionInput } from './inputs/update-action.input';
 
 @Injectable()
 export class ActionsService {

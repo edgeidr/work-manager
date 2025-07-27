@@ -15,8 +15,8 @@ import { ActionsService } from './actions.service';
 import { CreateActionDto } from './dto/create-action.dto';
 import { UpdateActionDto } from './dto/update-action.dto';
 import { JwtGuard } from '../auth/jwt.guard';
-import { CreateActionInput } from './types/create-action.input';
-import { UpdateActionInput } from './types/update-action.input';
+import { CreateActionInput } from './inputs/create-action.input';
+import { UpdateActionInput } from './inputs/update-action.input';
 
 @UseGuards(JwtGuard)
 @Controller('actions')
