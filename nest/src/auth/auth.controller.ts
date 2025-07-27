@@ -8,8 +8,8 @@ import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { OtpsService } from '../otps/otps.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SignUpInput } from './types/sign-up.input';
-import { SignInInput } from './types/sign-in.input';
+import { SignUpInput } from './inputs/sign-up.input';
+import { SignInInput } from './inputs/sign-in.input';
 import { OtpType } from '@prisma/client';
 import { User } from '../users/types/user.type';
 

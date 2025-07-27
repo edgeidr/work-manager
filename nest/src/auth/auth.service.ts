@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { TokensService } from '../tokens/tokens.service';
-import { SignUpInput } from './types/sign-up.input';
-import { SignInInput } from './types/sign-in.input';
-import { ResetPasswordInput } from './types/reset-password.input';
-import { RotateRefreshTokenInput } from './types/rotate-refresh-token.input';
+import { SignUpInput } from './inputs/sign-up.input';
+import { SignInInput } from './inputs/sign-in.input';
+import { ResetPasswordInput } from './inputs/reset-password.input';
+import { RotateRefreshTokenInput } from './inputs/rotate-refresh-token.input';
 import { SessionType } from '../tokens/types/session.type';
 import { User } from '../users/types/user.type';
 
