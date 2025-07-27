@@ -2,11 +2,11 @@ import { BadRequestException, HttpException, Injectable, NotFoundException } fro
 import { PrismaService } from '../prisma/prisma.service';
 import { hash, verify } from 'argon2';
 import { RolesService } from '../roles/roles.service';
-import { CreateUserInput } from './types/create-user.input';
-import { CredentialsInput } from './types/credentials.input';
-import { UpdatePasswordInput } from './types/update-password.input';
+import { CreateUserInput } from './inputs/create-user.input';
+import { CredentialsInput } from './inputs/credentials.input';
+import { UpdatePasswordInput } from './inputs/update-password.input';
 import { User } from './types/user.type';
-import { UpdateUserInput } from './types/update-user.input';
+import { UpdateUserInput } from './inputs/update-user.input';
 
 @Injectable()
 export class UsersService {

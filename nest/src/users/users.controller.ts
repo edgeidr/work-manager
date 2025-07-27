@@ -5,8 +5,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtGuard } from '../auth/jwt.guard';
 import { Auth } from '../auth/auth.decorator';
 import { User } from './types/user.type';
-import { CreateUserInput } from './types/create-user.input';
-import { UpdateUserInput } from './types/update-user.input';
+import { CreateUserInput } from './inputs/create-user.input';
+import { UpdateUserInput } from './inputs/update-user.input';
 
 @UseGuards(JwtGuard)
 @Controller('users')

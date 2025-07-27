@@ -1,4 +1,4 @@
-import { UserActionInput } from './user-action.input';
+import { UserActionInput } from '../inputs/user-action.input';
 
 export interface CreateUserInput {
 	email: string;
