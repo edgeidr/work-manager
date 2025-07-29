@@ -8,6 +8,7 @@ import { CreateOtpInput } from './inputs/create-otp.input';
 import { OtpExpiry } from './types/otp-expiry.type';
 import { VerifyOtpInput } from './inputs/verify-otp.input';
 import { OtpInput } from './inputs/otp.input';
+import { Otp } from '@prisma/client';
 
 @Injectable()
 export class OtpsService {
@@ -21,7 +22,7 @@ export class OtpsService {
 		this.MAX_ATTEMPTS = config.get<number>('MAX_OTP_ATTEMPTS', 3);
 	}
 
-	async create(input: CreateOtpInput): Promise<OtpExpiry> {
+	async create(input: CreateOtpInput): Promise<Otp> {
 		const duration = this.config.get('OTP_DURATION_IN_MINUTES', 300);
 		const totalDuration = duration * 1000 * 60;
 		const expiry = new Date(Date.now() + totalDuration);
@@ -32,9 +33,6 @@ export class OtpsService {
 				type: input.type,
 				userId: input.userId,
 				expiresAt: expiry,
-			},
-			select: {
-				expiresAt: true,
 			},
 		});
 
@@ -47,9 +45,9 @@ export class OtpsService {
 			new NotFoundException('messages.emailNotFound'),
 		);
 
-		const code = await this.create({ userId: user.id, type: input.type });
+		const otp = await this.create({ userId: user.id, type: input.type });
 
-		return code;
+		return { expiresAt: otp.expiresAt };
 	}
 
 	async verify(input: VerifyOtpInput): Promise<boolean> {
