@@ -10,7 +10,7 @@ export class MailTemplateService {
 		await this.mailService.sendEmail({
 			subject: 'OTP',
 			recipients: input.recipients,
-			html: 'Hi',
+			template: 'otp',
 			context: {
 				code: input.code,
 			},
