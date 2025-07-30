@@ -44,10 +44,27 @@ export class MailService {
 	}
 
 	private async renderTemplate(input: RenderTemplateInput): Promise<string> {
+		await this.registerPartials();
+
 		const templatePath = join(__dirname, 'templates', `${input.template}.hbs`);
 		const templateSource = await promises.readFile(templatePath, 'utf8');
 		const compiledTemplate = Handlebars.compile(templateSource);
 
 		return compiledTemplate(input.context);
+	}
+
+	private async registerPartials() {
+		const partialsDir = join(__dirname, 'templates', 'partials');
+		const files = await promises.readdir(partialsDir);
+
+		await Promise.all(
+			files.map(async (file) => {
+				const filePath = join(partialsDir, file);
+				const fileName = file.replace('.hbs', '');
+				const fileContent = await promises.readFile(filePath, 'utf8');
+
+				Handlebars.registerPartial(fileName, fileContent);
+			}),
+		);
 	}
 }

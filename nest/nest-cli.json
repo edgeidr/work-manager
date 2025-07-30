@@ -9,6 +9,7 @@
 				"include": "mail/templates/**/*",
 				"outDir": "dist/src/"
 			}
-		]
+		],
+		"watchAssets": true
 	}
 }
