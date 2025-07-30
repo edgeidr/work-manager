@@ -6,7 +6,8 @@
 		"emailNotFound": "Email not found",
 		"invalidOtp": "Invalid OTP",
 		"maxOtpAttempts": "Max OTP attempts reached",
-		"resourceNotFound": "Resource not found"
+		"resourceNotFound": "Resource not found",
+		"emailFailed": "Email could not be sent"
 	},
 	"validation": {
 		"required": "Must not be empty",

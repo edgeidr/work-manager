@@ -7,6 +7,7 @@ import { RolesModule } from './roles/roles.module';
 import { ActionsModule } from './actions/actions.module';
 import { OtpsModule } from './otps/otps.module';
 import { TokensModule } from './tokens/tokens.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
 	imports: [
@@ -18,6 +19,7 @@ import { TokensModule } from './tokens/tokens.module';
 		ActionsModule,
 		OtpsModule,
 		TokensModule,
+		MailModule,
 	],
 })
 export class AppModule {}

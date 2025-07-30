@@ -9,6 +9,7 @@ import { OtpExpiry } from './types/otp-expiry.type';
 import { VerifyOtpInput } from './inputs/verify-otp.input';
 import { OtpInput } from './inputs/otp.input';
 import { Otp } from '@prisma/client';
+import { MailTemplateService } from '../mail/mail-template.service';
 
 @Injectable()
 export class OtpsService {
@@ -18,6 +19,7 @@ export class OtpsService {
 		private prisma: PrismaService,
 		private config: ConfigService,
 		private usersService: UsersService,
+		private readonly mailTemplateService: MailTemplateService,
 	) {
 		this.MAX_ATTEMPTS = config.get<number>('MAX_OTP_ATTEMPTS', 3);
 	}
@@ -46,6 +48,11 @@ export class OtpsService {
 		);
 
 		const otp = await this.create({ userId: user.id, type: input.type });
+
+		await this.mailTemplateService.sendOtp({
+			recipients: [input.email],
+			code: otp.code,
+		});
 
 		return { expiresAt: otp.expiresAt };
 	}
