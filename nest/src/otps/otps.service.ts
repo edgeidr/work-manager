@@ -49,7 +49,7 @@ export class OtpsService {
 
 		const otp = await this.create({ userId: user.id, type: input.type });
 
-		await this.mailTemplateService.sendOtp({
+		this.mailTemplateService.sendOtp({
 			subject: input.subject,
 			title: input.title,
 			recipients: [input.email],
