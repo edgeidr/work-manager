@@ -8,10 +8,11 @@ export class MailTemplateService {
 
 	async sendOtp(input: SendOtpEmailInput) {
 		await this.mailService.sendEmail({
-			subject: 'OTP',
+			subject: input.subject,
 			recipients: input.recipients,
 			template: 'otp',
 			context: {
+				title: input.title,
 				code: input.code,
 			},
 		});

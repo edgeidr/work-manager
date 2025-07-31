@@ -7,12 +7,15 @@ import { ResetPasswordInput } from './inputs/reset-password.input';
 import { RotateRefreshTokenInput } from './inputs/rotate-refresh-token.input';
 import { SessionType } from '../tokens/types/session.type';
 import { User } from '../users/types/user.type';
+import { OtpsService } from '../otps/otps.service';
+import { OtpType } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
 	constructor(
 		private tokensService: TokensService,
 		private usersService: UsersService,
+		private readonly otpsService: OtpsService,
 	) {}
 
 	async signUp(input: SignUpInput): Promise<User> {
@@ -83,5 +86,14 @@ export class AuthService {
 		);
 
 		return session;
+	}
+
+	async forgotPassword(email: string) {
+		return this.otpsService.send({
+			subject: 'Reset Your Password - OTP Verification',
+			title: 'Forgot your password?',
+			email,
+			type: OtpType.FORGOT_PASSWORD,
+		});
 	}
 }

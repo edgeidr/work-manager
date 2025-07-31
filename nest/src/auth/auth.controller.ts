@@ -10,7 +10,6 @@ import { OtpsService } from '../otps/otps.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SignUpInput } from './inputs/sign-up.input';
 import { SignInInput } from './inputs/sign-in.input';
-import { OtpType } from '@prisma/client';
 import { User } from '../users/types/user.type';
 
 @Controller('auth')
@@ -18,7 +17,6 @@ export class AuthController {
 	constructor(
 		private authService: AuthService,
 		private configService: ConfigService,
-		private otpsService: OtpsService,
 	) {}
 
 	@Post('signup')
@@ -79,7 +77,7 @@ export class AuthController {
 
 	@Post('forgot-password')
 	forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-		return this.otpsService.send({ email: forgotPasswordDto.email, type: OtpType.FORGOT_PASSWORD });
+		return this.authService.forgotPassword(forgotPasswordDto.email);
 	}
 
 	@Post('reset-password')
