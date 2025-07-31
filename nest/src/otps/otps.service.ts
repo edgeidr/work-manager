@@ -8,7 +8,7 @@ import { CreateOtpInput } from './inputs/create-otp.input';
 import { OtpExpiry } from './types/otp-expiry.type';
 import { VerifyOtpInput } from './inputs/verify-otp.input';
 import { OtpInput } from './inputs/otp.input';
-import { Otp } from '@prisma/client';
+import { Otp, OtpAttempt } from '@prisma/client';
 import { MailTemplateService } from '../mail/mail-template.service';
 
 @Injectable()
@@ -152,7 +152,13 @@ export class OtpsService {
 			},
 		});
 
-		throw exception ?? new BadRequestException('messages.maxOtpAttempts');
+		throw (
+			exception ??
+			new BadRequestException({
+				message: 'messages.maxOtpAttempts',
+				payload: { minutes: this.getMinutesRemaining(lockedUntil) },
+			})
+		);
 	}
 
 	private async markAsUsed(id: number): Promise<void> {
@@ -198,7 +204,15 @@ export class OtpsService {
 			otpAttempt.lockedUntil > now;
 
 		if (isLocked) {
-			throw exception ?? new BadRequestException('messages.maxOtpAttempts');
+			const lockedUntil = new Date(otpAttempt.lockedUntil!);
+
+			throw (
+				exception ??
+				new BadRequestException({
+					message: 'messages.maxOtpAttempts',
+					payload: { minutes: this.getMinutesRemaining(lockedUntil) },
+				})
+			);
 		}
 
 		if (lockExpired) {
@@ -209,4 +223,11 @@ export class OtpsService {
 	private generate(length: number = 6): string {
 		return Array.from({ length }, () => randomInt(0, 10)).join('');
 	}
+
+	private getMinutesRemaining = (date: Date): number => {
+		const now = new Date();
+		const minutesRemaining = Math.ceil((date.getTime() - now.getTime()) / 60000);
+
+		return minutesRemaining;
+	};
 }

@@ -17,7 +17,7 @@ export const useCustomFetch = <T>(url: string | (() => string), options?: UseFet
 			}
 
 			const { response } = ctx;
-			const { message } = response._data;
+			const { message, payload } = response._data;
 			const defaultSummary = t("httpStatus.unexpected");
 			const defaultDetail = t("messages.tryAgain");
 			const summary = te(`httpStatus.${response.status}`) ? t(`httpStatus.${response.status}`) : defaultSummary;
@@ -33,7 +33,7 @@ export const useCustomFetch = <T>(url: string | (() => string), options?: UseFet
 						life: runtimeConfig.public.toastLife,
 					});
 				} else {
-					const detail = te(message) ? t(message) : defaultDetail;
+					const detail = te(message) ? t(message, payload || {}) : defaultDetail;
 
 					toast.add({
 						summary,
