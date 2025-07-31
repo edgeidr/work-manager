@@ -12,7 +12,7 @@
 				<FieldErrors field="email" :formErrors />
 			</div>
 
-			<Button @click="navigateTo({ name: 'verify-code' })" :label="$t('auth.forgotPassword.buttons.submit')" fluid />
+			<Button type="submit" :label="$t('auth.forgotPassword.buttons.submit')" :loading="sendCodeStatus === 'pending'" fluid />
 
 			<div class="flex justify-center">
 				<Button @click="navigateTo({ name: 'login' })" :label="$t('auth.forgotPassword.buttons.back')" variant="link" class="!p-0" size="small" />
@@ -24,13 +24,39 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "auth" });
 
+	const forgotPasswordCodeExpiry = useState<Date | null>("forgotPasswordCodeExpiry", () => null);
+	const forgotPasswordEmail = useState<string>("forgotPasswordEmail", () => "");
 	const formErrors = ref<FormError[]>([]);
 	const { hasError, clearAllErrors } = useFormErrors(formErrors);
 	const form = ref({
 		email: "",
 	});
 
+	const { execute: sendCode, status: sendCodeStatus } = await useCustomFetch("/auth/forgot-password", {
+		immediate: false,
+		watch: false,
+		method: "POST",
+		body: form,
+		onResponse: async ({ response }) => {
+			if (!response.ok) return;
+
+			const { expiresAt } = response._data as Otp;
+
+			forgotPasswordCodeExpiry.value = new Date(expiresAt);
+			forgotPasswordEmail.value = form.value.email;
+			navigateTo({ name: "verify-code" });
+		},
+		onResponseError: ({ response }) => {
+			const { message } = response._data;
+
+			if (message && Array.isArray(message)) {
+				formErrors.value = message;
+			}
+		},
+	});
+
 	const onSubmit = () => {
 		clearAllErrors();
+		sendCode();
 	};
 </script>

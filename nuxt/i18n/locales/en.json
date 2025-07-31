@@ -5,7 +5,7 @@
 		"reviewAll": "Please review all errors",
 		"emailNotFound": "Email not found",
 		"invalidOtp": "Invalid OTP",
-		"maxOtpAttempts": "Max OTP attempts reached",
+		"maxOtpAttempts": "Max OTP attempts reached. Try again in {minutes} minute(s).",
 		"resourceNotFound": "Resource not found",
 		"emailFailed": "Email could not be sent"
 	},
