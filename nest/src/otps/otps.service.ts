@@ -172,11 +172,15 @@ export class OtpsService {
 					type: input.type,
 				},
 			},
-			data: { attempts: 0 },
+			data: {
+				attempts: 0,
+				lockedUntil: null,
+			},
 		});
 	}
 
 	private async validateAttemptAvailability(input: OtpInput, exception?: HttpException): Promise<void> {
+		const now = new Date();
 		const otpAttempt = await this.prisma.otpAttempt.findUnique({
 			where: {
 				userId_type: {
@@ -186,13 +190,19 @@ export class OtpsService {
 			},
 		});
 
-		if (
+		const lockExpired = otpAttempt && otpAttempt.lockedUntil && otpAttempt.lockedUntil <= now;
+		const isLocked =
 			otpAttempt &&
 			otpAttempt.attempts >= this.MAX_ATTEMPTS &&
 			otpAttempt.lockedUntil &&
-			otpAttempt.lockedUntil > new Date()
-		) {
+			otpAttempt.lockedUntil > now;
+
+		if (isLocked) {
 			throw exception ?? new BadRequestException('messages.maxOtpAttempts');
+		}
+
+		if (lockExpired) {
+			await this.resetAttempt(input);
 		}
 	}
 
