@@ -30,9 +30,12 @@ export class MailService {
 	async sendEmail(input: SendEmailInput) {
 		const transporter = this.createTransporter();
 		const html = await this.renderTemplate({ template: input.template, context: input.context });
+		const appName = this.configService.get<string>('APP_NAME');
+		const senderEmail = this.configService.get<string>('MAIL_SENDER_EMAIL');
+		const mailSender = appName + ' <' + senderEmail + '>';
 
 		const options: nodemailer.SendMailOptions = {
-			from: this.configService.get<string>('MAIL_SENDER'),
+			from: mailSender,
 			to: input.recipients,
 			subject: input.subject,
 			html: html,
