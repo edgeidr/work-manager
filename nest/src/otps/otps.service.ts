@@ -25,7 +25,7 @@ export class OtpsService {
 	}
 
 	async create(input: CreateOtpInput): Promise<Otp> {
-		const duration = this.config.get('OTP_DURATION_IN_MINUTES', 300);
+		const duration = this.config.get<number>('OTP_DURATION_IN_MINUTES', 5);
 		const totalDuration = duration * 1000 * 60;
 		const expiry = new Date(Date.now() + totalDuration);
 		const code = this.generate(6);
