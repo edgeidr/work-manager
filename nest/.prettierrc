@@ -3,5 +3,19 @@
 	"trailingComma": "all",
 	"tabWidth": 4,
 	"useTabs": true,
-	"printWidth": 120
+	"printWidth": 120,
+	"overrides": [
+		{
+			"files": "**/*.hbs",
+			"options": {
+				"parser": "lwc"
+			}
+		},
+		{
+			"files": "**/*.css.hbs",
+			"options": {
+				"parser": "css"
+			}
+		}
+	]
 }

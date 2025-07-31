@@ -9,7 +9,9 @@ import { RenderTemplateInput } from './inputs/render-template.input';
 
 @Injectable()
 export class MailService {
-	constructor(private readonly configService: ConfigService) {}
+	constructor(private readonly configService: ConfigService) {
+		this.registerPartials();
+	}
 
 	private createTransporter() {
 		const transporter = nodemailer.createTransport({
@@ -44,13 +46,26 @@ export class MailService {
 	}
 
 	private async renderTemplate(input: RenderTemplateInput): Promise<string> {
-		await this.registerPartials();
-
+		const layoutPath = join(__dirname, 'templates/layouts/main.hbs');
 		const templatePath = join(__dirname, 'templates', `${input.template}.hbs`);
-		const templateSource = await promises.readFile(templatePath, 'utf8');
-		const compiledTemplate = Handlebars.compile(templateSource);
+		const globalStylePath = join(__dirname, 'templates/styles/global.css.hbs');
+		const pageStylePath = join(__dirname, 'templates/styles/', `${input.template}.css.hbs`);
 
-		return compiledTemplate(input.context);
+		const layoutSource = await promises.readFile(layoutPath, 'utf8');
+		const templateSource = await promises.readFile(templatePath, 'utf8');
+
+		const globalStyles = await this.readIfExists(globalStylePath);
+		const pageStyles = await this.readIfExists(pageStylePath);
+		const combinedStyles = `${globalStyles}\n${pageStyles}`.trim();
+
+		const body = Handlebars.compile(templateSource)(input.context);
+		const compiledLayout = Handlebars.compile(layoutSource);
+
+		return compiledLayout({
+			...input.context,
+			body,
+			styles: combinedStyles,
+		});
 	}
 
 	private async registerPartials() {
@@ -66,5 +81,13 @@ export class MailService {
 				Handlebars.registerPartial(fileName, fileContent);
 			}),
 		);
+	}
+
+	private async readIfExists(path: string): Promise<string> {
+		try {
+			return await promises.readFile(path, 'utf8');
+		} catch (err) {
+			return ''; // If the CSS file doesn't exist, return empty string
+		}
 	}
 }

@@ -1,6 +1,7 @@
-{{>header}}
+<h2>{{ title }}</h2>
 
-<p>Hi there,</p>
-<p>Your OTP is: <b>{{code}}</b></p>
+<p>We received a request to reset your password. Use the one-time password (OTP) below to proceed.</p>
 
-{{>footer}}
+<div class="code">{{ code }}</div>
+
+<p class="text-muted">If you didn’t request a password reset, you can safely ignore this email.</p>
