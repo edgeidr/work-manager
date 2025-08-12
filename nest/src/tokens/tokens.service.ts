@@ -131,6 +131,26 @@ export class TokensService {
 		});
 	}
 
+	async createPasswordResetToken(userId: number): Promise<{ value: string }> {
+		const token = randomUUID();
+		const tokenDuration = this.config.get<number>('PASSWORD_RESET_TOKEN_DURATION_IN_MINUTES', 5);
+		const tokenTotalDuration = tokenDuration * 1000 * 60;
+		const tokenExpiration = new Date(Date.now() + tokenTotalDuration);
+
+		const passwordResetToken = this.prisma.passwordResetToken.create({
+			data: {
+				value: token,
+				userId,
+				expiresAt: tokenExpiration,
+			},
+			select: {
+				value: true,
+			},
+		});
+
+		return passwordResetToken;
+	}
+
 	async validatePasswordResetToken(token: string, exception?: HttpException): Promise<PasswordResetToken> {
 		const passwordResetToken = await this.prisma.passwordResetToken.findUnique({
 			where: {
@@ -142,12 +162,15 @@ export class TokensService {
 
 		if (!passwordResetToken) throw exception ?? new NotFoundException('messages.resourceNotFound');
 
+		await this.markPasswordResetTokenAsUsed(token);
+
 		return passwordResetToken;
 	}
 
-	async removePasswordResetTokensForUser(userId: number): Promise<void> {
-		await this.prisma.passwordResetToken.deleteMany({
-			where: { userId },
+	private async markPasswordResetTokenAsUsed(token: string): Promise<void> {
+		await this.prisma.passwordResetToken.update({
+			where: { value: token },
+			data: { used: true },
 		});
 	}
 

@@ -13,7 +13,9 @@
 		"required": "Must not be empty",
 		"invalidEmail": "Must be a valid email address",
 		"invalidType": "Must be a valid value",
-		"invalidOption": "Must be a valid option"
+		"invalidOption": "Must be a valid option",
+		"passwordMismatch": "Passwords do not match",
+		"passwordNotStrong": "Not strong enough"
 	},
 	"httpStatus": {
 		"400": "Bad Request",
@@ -68,7 +70,13 @@
 			"subtitle": "Let’s finish resetting your login credentials",
 			"labels": {
 				"password": "New password",
-				"confirmPassword": "Confirm new password"
+				"confirmPassword": "Confirm new password",
+				"passwordFeedbackLabel": "Must contain:",
+				"passwordRequireUppercase": "an uppercase letter",
+				"passwordRequireLowercase": "a lowercase letter",
+				"passwordRequireNumber": "a number",
+				"passwordRequireSymbol": "a special character",
+				"passwordRequireMinCharacters": "at least 8 characters"
 			},
 			"buttons": {
 				"submit": "Reset Password",

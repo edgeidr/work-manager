@@ -8,8 +8,9 @@ import { CreateOtpInput } from './inputs/create-otp.input';
 import { OtpExpiry } from './types/otp-expiry.type';
 import { VerifyOtpInput } from './inputs/verify-otp.input';
 import { OtpInput } from './inputs/otp.input';
-import { Otp, OtpAttempt } from '@prisma/client';
+import { Otp, OtpType } from '@prisma/client';
 import { MailTemplateService } from '../mail/mail-template.service';
+import { TokensService } from '../tokens/tokens.service';
 
 @Injectable()
 export class OtpsService {
@@ -20,6 +21,7 @@ export class OtpsService {
 		private config: ConfigService,
 		private usersService: UsersService,
 		private readonly mailTemplateService: MailTemplateService,
+		private readonly tokensService: TokensService,
 	) {
 		this.MAX_ATTEMPTS = config.get<number>('MAX_OTP_ATTEMPTS', 3);
 	}
@@ -59,7 +61,7 @@ export class OtpsService {
 		return { expiresAt: otp.expiresAt };
 	}
 
-	async verify(input: VerifyOtpInput): Promise<boolean> {
+	async verify(input: VerifyOtpInput): Promise<any> {
 		const user = await this.usersService.findOneByEmail(input.email, new BadRequestException('messages.tryAgain'));
 
 		await this.validateAttemptAvailability({ userId: user.id, type: input.type });
@@ -82,7 +84,12 @@ export class OtpsService {
 		await this.markAsUsed(otp.id);
 		await this.resetAttempt({ userId: user.id, type: input.type });
 
-		return true;
+		switch (input.type) {
+			case OtpType.FORGOT_PASSWORD:
+				return this.tokensService.createPasswordResetToken(user.id);
+			default:
+				return true;
+		}
 	}
 
 	private async createAttempt(input: OtpInput): Promise<void> {

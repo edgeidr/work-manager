@@ -24,8 +24,10 @@
 <script lang="ts" setup>
 	definePageMeta({ layout: "auth" });
 
+	const resetPasswordToken = useState<string>("resetPasswordToken", () => "");
 	const forgotPasswordCodeExpiry = useState<Date | null>("forgotPasswordCodeExpiry", () => null);
 	const forgotPasswordEmail = useState<string>("forgotPasswordEmail", () => "");
+	const forgotPasswordResendExpiry = useState<Date | null>("forgotPasswordResendExpiry", () => null);
 	const formErrors = ref<FormError[]>([]);
 	const { hasError, clearAllErrors } = useFormErrors(formErrors);
 	const form = ref({
@@ -59,4 +61,11 @@
 		clearAllErrors();
 		sendCode();
 	};
+
+	onMounted(() => {
+		forgotPasswordEmail.value = "";
+		forgotPasswordCodeExpiry.value = null;
+		forgotPasswordResendExpiry.value = null;
+		resetPasswordToken.value = "";
+	});
 </script>

@@ -82,8 +82,8 @@ export class AuthController {
 
 	@Post('reset-password')
 	async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-		const { newPassword, token } = resetPasswordDto;
-		await this.authService.resetPassword({ password: newPassword, token });
+		const { password, token } = resetPasswordDto;
+		await this.authService.resetPassword({ password, token });
 	}
 
 	private getCookieOptions(maxAge: number): CookieOptions {

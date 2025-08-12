@@ -71,8 +71,6 @@ export class AuthService {
 			},
 			new BadRequestException('messages.tryAgain'),
 		);
-
-		await this.tokensService.removePasswordResetTokensForUser(userId);
 	}
 
 	async rotateRefreshToken(input: RotateRefreshTokenInput): Promise<SessionType> {

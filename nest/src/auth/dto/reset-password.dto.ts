@@ -1,13 +1,13 @@
-import { Equals, IsNotEmpty, IsString, Matches, ValidateIf } from 'class-validator';
+import { IsNotEmpty, IsString, IsStrongPassword } from 'class-validator';
+import { Match } from '../../common/match.decorator';
 
 export class ResetPasswordDto {
 	@IsString({ message: 'validation.invalidType' })
-	@IsNotEmpty({ message: 'validation.required' })
-	newPassword: string;
+	@IsStrongPassword({}, { message: 'validation.passwordNotStrong' })
+	password: string;
 
 	@IsString({ message: 'validation.invalidType' })
-	@IsNotEmpty({ message: 'validation.required' })
-	@Equals((object: any) => object.password, { message: 'validation.passwordMismatch' })
+	@Match('password', { message: 'validation.passwordMismatch' })
 	confirmPassword: string;
 
 	@IsString({ message: 'validation.invalidType' })

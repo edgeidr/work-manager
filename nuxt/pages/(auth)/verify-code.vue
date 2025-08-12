@@ -40,9 +40,10 @@
 	const { t } = useI18n();
 	const OTP_LENGTH = 6;
 	const RESEND_DEFAULT_DURATION = 1000 * 30;
+	const resetPasswordToken = useState<string>("resetPasswordToken");
 	const email = useState<Date | null>("forgotPasswordEmail");
 	const codeExpiry = useState<Date | null>("forgotPasswordCodeExpiry");
-	const resendExpiry = useState<Date | null>("forgotPasswordResendExpiry", () => null);
+	const resendExpiry = useState<Date | null>("forgotPasswordResendExpiry");
 	const codeCountdownTimer = useCountdownTimer(codeExpiry, "mm:ss");
 	const resendCountdownTimer = useCountdownTimer(resendExpiry, "s");
 	const hasError = ref<boolean>(false);
@@ -77,6 +78,9 @@
 		onResponse: async ({ response }) => {
 			if (!response.ok) return;
 
+			const { value } = response._data as { value: string };
+
+			resetPasswordToken.value = value;
 			navigateTo({ name: "reset-password" });
 		},
 		onResponseError: () => {
