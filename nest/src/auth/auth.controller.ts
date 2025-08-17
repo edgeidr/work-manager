@@ -6,7 +6,6 @@ import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CookieOptions, Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
-import { OtpsService } from '../otps/otps.service';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SignUpInput } from './inputs/sign-up.input';
 import { SignInInput } from './inputs/sign-in.input';

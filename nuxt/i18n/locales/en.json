@@ -10,8 +10,8 @@
 		"emailFailed": "Email could not be sent"
 	},
 	"validation": {
-		"required": "Must not be empty",
-		"invalidEmail": "Must be a valid email address",
+		"required": "Required",
+		"invalidEmail": "Invalid email address",
 		"invalidType": "Must be a valid value",
 		"invalidOption": "Must be a valid option",
 		"passwordMismatch": "Passwords do not match",
