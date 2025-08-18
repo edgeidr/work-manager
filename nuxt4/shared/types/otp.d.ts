@@ -1,3 +1,0 @@
-interface Otp {
-	expiresAt: Date;
-}

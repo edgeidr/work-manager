@@ -1,14 +1,19 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
+import tailwindcss from "@tailwindcss/vite";
+
 export default defineNuxtConfig({
-	compatibilityDate: "2024-11-01",
+	compatibilityDate: "2025-07-15",
 	devtools: { enabled: true },
 	devServer: {
 		host: "work-manager.edgeidr.local",
 		port: 3000,
 	},
 	ssr: false,
-	css: ["@/assets/css/base.css"],
+	css: ["~/assets/css/main.css"],
+	vite: {
+		plugins: [tailwindcss()],
+	},
 	app: {
 		head: {
 			title: process.env.NUXT_APP_NAME,
@@ -25,7 +30,22 @@ export default defineNuxtConfig({
 			toastLife: Number(process.env.NUXT_TOAST_LIFE) || 5000,
 		},
 	},
-	modules: ["@primevue/nuxt-module", "@nuxtjs/tailwindcss", "@nuxt/fonts", "@nuxt/icon", "@vueuse/nuxt", "@nuxtjs/i18n"],
+	components: [
+		{
+			path: "~/components",
+			pathPrefix: false,
+		},
+	],
+	modules: ["@nuxt/fonts", "@nuxt/icon", "@nuxtjs/i18n", "@primevue/nuxt-module", "@vueuse/nuxt"],
+	fonts: {
+		families: [{ name: "Inter" }],
+	},
+	i18n: {
+		locales: [{ code: "en", language: "en-US", file: "en.json" }],
+		defaultLocale: "en",
+		strategy: "no_prefix",
+		langDir: "../shared/i18n/locales/",
+	},
 	primevue: {
 		importTheme: { from: "@/primevue/theme" },
 		options: {
@@ -36,18 +56,4 @@ export default defineNuxtConfig({
 			},
 		},
 	},
-	fonts: {
-		families: [{ name: "Inter" }],
-	},
-	i18n: {
-		locales: [{ code: "en", language: "en-US", file: "en.json" }],
-		defaultLocale: "en",
-		strategy: "no_prefix",
-	},
-	components: [
-		{
-			path: "~/components",
-			pathPrefix: false,
-		},
-	],
 });
