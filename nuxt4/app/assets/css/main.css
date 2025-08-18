@@ -1,0 +1,6 @@
+@import "tailwindcss";
+@import "tailwindcss-primeui";
+
+:root {
+	@apply bg-surface-900 text-surface-0 font-[Inter] text-[14px];
+}
